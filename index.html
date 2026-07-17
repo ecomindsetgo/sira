@@ -742,6 +742,15 @@
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+
+// Al final de tu script type="module", añade esto:
+window.cargarHistorialReingresos = cargarHistorialReingresos;
+window.filtrarTablaReingresos = filtrarTablaReingresos;
+window.agregarFilaReingreso = agregarFilaReingreso;
+window.guardarReingreso = guardarReingreso;
+window.generarReporteReingresoPDF = generarReporteReingresoPDF;
+
+
         // ==========================================
         // 🚨 CONFIGURACIÓN FIREBASE (PEGA TUS CREDENCIALES AQUÍ)
         // ==========================================
@@ -865,27 +874,25 @@ function inicializarSelectsReingresos() {
 
         // Observador de la Sesión
         onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                document.getElementById('login-container').style.setProperty('display', 'none', 'important');
-                document.getElementById('app-container').style.display = 'flex';
-                
-                const userTitle = user.displayName ? user.displayName.toUpperCase() : user.email.split('@')[0].toUpperCase();
-                
-                document.getElementById('user-display-name').innerText = userTitle;
-                document.getElementById('user-display-role').innerText = listaPersonalRoles[userTitle] || "Personal de Archivo";
-                document.getElementById('inv-registra').value = userTitle;
-
-                document.getElementById('perf-email').value = user.email;
-                document.getElementById('perf-nombre').value = user.displayName || '';
-                document.getElementById('inv-fecha').valueAsDate = new Date();
-                
-                cargarDataMaestra(userTitle);
-                await cargarInventariosDesdeCloud();
-            } else {
-                document.getElementById('app-container').style.setProperty('display', 'none', 'important');
-                document.getElementById('login-container').style.display = 'flex';
-            }
-        });
+    if (user) {
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('app-container').style.display = 'flex';
+        
+        // Carga de datos iniciales
+        const userTitle = user.displayName ? user.displayName.toUpperCase() : user.email.split('@')[0].toUpperCase();
+        document.getElementById('user-display-name').innerText = userTitle;
+        document.getElementById('inv-registra').value = userTitle;
+        
+        cargarDataMaestra(userTitle);
+        inicializarSelectsReingresos(); // Asegúrate de llamar esto
+        
+        // Carga de inventarios
+        await cargarInventariosDesdeCloud().catch(err => console.error("Error al cargar inventarios:", err));
+    } else {
+        document.getElementById('app-container').style.display = 'none';
+        document.getElementById('login-container').style.display = 'flex';
+    }
+});
 
         document.getElementById('btn-logout').addEventListener('click', () => {
     signOut(auth);
