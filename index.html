@@ -623,7 +623,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header bg-dark text-white border-0">
-                    <h6 class="modal-title fw-bold"><i class="bi bi-folder-plus me-2"></i>Configurar Rango de Expedientes</h6>
+                    <h6 class="modal-title fw-bold" id="modal-rango-titulo"><i class="bi bi-folder-plus me-2"></i>Configurar Rango de Expedientes</h6>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="cerrarModalRango()"></button>
                 </div>
                 <div class="modal-body p-4">
@@ -687,7 +687,7 @@
 
                     <div class="d-flex justify-content-end gap-2 pt-2 border-top">
                         <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal" onclick="cerrarModalRango()">Cancelar</button>
-                        <button type="button" class="btn btn-primary btn-sm px-4 fw-bold" onclick="inyectarRangoAGrilla()">Agregar a Inventario</button>
+                        <button type="button" class="btn btn-primary btn-sm px-4 fw-bold" id="btn-guardar-rango-modal" onclick="inyectarRangoAGrilla()">Agregar a Inventario</button>
                     </div>
                 </div>
             </div>
@@ -933,16 +933,34 @@ function resetFormularioReingreso() {
         });
 
         // Lógica de modal interna
-        function abrirModalRango() {
-            listaFaltantesModal = [];
+        let indiceEdicionRango = null; // null = modo "agregar nuevo"; número = índice del rango que se está editando
+
+        function abrirModalRango(index = null) {
+            indiceEdicionRango = (index !== null && index !== undefined) ? index : null;
             document.getElementById('form-modal-rango').reset();
             document.getElementById('form-mod-add-faltante').reset();
+
+            if (indiceEdicionRango !== null && listaRangosCenso[indiceEdicionRango]) {
+                const r = listaRangosCenso[indiceEdicionRango];
+                document.getElementById('mod-inicial').value = r.inicial;
+                document.getElementById('mod-final').value = r.final;
+                document.getElementById('mod-archivamiento').value = r.archivamiento;
+                listaFaltantesModal = [...(r.detalleFaltantes || [])];
+                document.getElementById('modal-rango-titulo').innerHTML = '<i class="bi bi-pencil-square me-2"></i>Editar Rango de Expedientes';
+                document.getElementById('btn-guardar-rango-modal').innerText = 'Guardar Cambios';
+            } else {
+                listaFaltantesModal = [];
+                document.getElementById('modal-rango-titulo').innerHTML = '<i class="bi bi-folder-plus me-2"></i>Configurar Rango de Expedientes';
+                document.getElementById('btn-guardar-rango-modal').innerText = 'Agregar a Inventario';
+            }
+
             renderTablaFaltantesModal();
             modalInstance = new bootstrap.Modal(document.getElementById('modalAgregarRango'));
             modalInstance.show();
         }
 
         function cerrarModalRango() {
+            indiceEdicionRango = null;
             if(modalInstance) modalInstance.hide();
         }
 
@@ -1044,6 +1062,15 @@ function resetFormularioReingreso() {
 
             if(!ini || !fin) { Swal.fire('Atención', 'Defina los números del rango principal.', 'warning'); return; }
 
+            // Verifica que el rango inicial y final compartan el mismo código base (ej: ambos "17-"),
+            // para detectar errores típicos como un guion faltante ("17-2099" escrito como "172099").
+            const prefijoIni = extraerPrefijo(ini);
+            const prefijoFin = extraerPrefijo(fin);
+            if (prefijoIni !== prefijoFin) {
+                Swal.fire('Formato inconsistente', `El Rango Inicial ("${ini}") y el Rango Final ("${fin}") no comparten el mismo código. Verifique que no falte un guion u otro carácter (ej: "17-2099" en vez de "172099").`, 'error');
+                return;
+            }
+
             const nIni = extraerNumero(ini);
             const nFin = extraerNumero(fin);
             if(nFin < nIni) { Swal.fire('Error', 'Rango inválido.', 'error'); return; }
@@ -1052,7 +1079,7 @@ function resetFormularioReingreso() {
             const totalFaltantes = listaFaltantesModal.reduce((sum, f) => sum + f.cantidad, 0);
             const totalReal = Math.max(0, totalTeorico - totalFaltantes);
 
-            listaRangosCenso.push({
+            const rangoData = {
                 inicial: ini,
                 final: fin,
                 archivamiento: arch,
@@ -1060,7 +1087,14 @@ function resetFormularioReingreso() {
                 faltantes: totalFaltantes,
                 real: totalReal,
                 detalleFaltantes: [...listaFaltantesModal]
-            });
+            };
+
+            if (indiceEdicionRango !== null && listaRangosCenso[indiceEdicionRango]) {
+                listaRangosCenso[indiceEdicionRango] = rangoData;
+            } else {
+                listaRangosCenso.push(rangoData);
+            }
+            indiceEdicionRango = null;
 
             cerrarModalRango();
             renderGrillaGrandeCenso();
@@ -1083,7 +1117,10 @@ function resetFormularioReingreso() {
                     <td class="text-center bg-light">${r.teorico}</td>
                     <td class="text-center text-danger fw-bold">${r.faltantes}</td>
                     <td class="text-center table-success fw-bold text-success">${r.real}</td>
-                    <td class="text-end"><button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1.5" onclick="window.quitarRangoDeGrilla(${idx})"><i class="bi bi-trash3"></i></button></td>
+                    <td class="text-end">
+                        <button type="button" class="btn btn-sm btn-outline-primary py-0 px-1.5 me-1" onclick="window.editarRangoDeGrilla(${idx})"><i class="bi bi-pencil"></i></button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1.5" onclick="window.quitarRangoDeGrilla(${idx})"><i class="bi bi-trash3"></i></button>
+                    </td>
                 `;
                 body.appendChild(tr);
             });
@@ -1093,6 +1130,10 @@ function resetFormularioReingreso() {
             listaRangosCenso.splice(index, 1);
             renderGrillaGrandeCenso();
             calcularConsolidadoGlobal();
+        };
+
+        window.editarRangoDeGrilla = function(index) {
+            abrirModalRango(index);
         };
 
         function calcularConsolidadoGlobal() {
