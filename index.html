@@ -207,7 +207,7 @@
                 <a class="nav-link active" href="#" onclick="switchView('view-dashboard', 'Dashboard Principal')">
                     <i class="bi bi-grid-1x2-fill"></i> Dashboard Global
                 </a>
-                <a class="nav-link" href="#" onclick="switchView('view-inventario', 'Carga de Inventario de Existencias')">
+                <a class="nav-link" href="#" data-view="view-inventario" onclick="window.iniciarNuevoInventario()">
                     <i class="bi bi-journal-plus"></i> Cargar Inventario
                 </a>
                 <a class="nav-link" href="#" onclick="switchView('view-consultas', 'Consultar Consolidados por Repositorio')">
@@ -482,7 +482,7 @@
                                     </div>
                                 </div>
                                 <div class="d-grid gap-2">
-                                    <button type="submit" class="btn btn-primary btn-lg py-3 fw-bold">Cerrar y Guardar Consolidado</button>
+                                    <button type="submit" class="btn btn-primary btn-lg py-3 fw-bold" id="btn-guardar-inventario">Cerrar y Guardar Consolidado</button>
                                 </div>
                             </div>
                         </div>
@@ -704,7 +704,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 
         // ==========================================
@@ -836,7 +836,7 @@ function resetFormularioReingreso() {
             document.getElementById(viewId).classList.add('active');
             document.getElementById('page-title').innerText = titleText;
             
-            const link = Array.from(document.querySelectorAll('#sidebar .nav-link')).find(l => l.getAttribute('onclick').includes(viewId));
+            const link = Array.from(document.querySelectorAll('#sidebar .nav-link')).find(l => l.dataset.view === viewId || (l.getAttribute('onclick') && l.getAttribute('onclick').includes(viewId)));
             if(link) link.classList.add('active');
         }
 
@@ -1161,24 +1161,32 @@ function resetFormularioReingreso() {
                 totalTeorico: parseInt(document.getElementById('calc-total-teorico').innerText, 10),
                 totalFaltantes: parseInt(document.getElementById('calc-total-faltantes').innerText, 10),
                 totalReal: parseInt(document.getElementById('calc-total-real').innerText, 10),
-                matrizRangos: [...listaRangosCenso],
-                createdAt: Date.now()
+                matrizRangos: [...listaRangosCenso]
             };
 
+            const esEdicion = !!idLoteEnEdicion;
+
             try {
-                await addDoc(collection(db, "censo_institucional"), consolidadoLote);
-                
+                if (esEdicion) {
+                    await updateDoc(doc(db, "censo_institucional", idLoteEnEdicion), consolidadoLote);
+                } else {
+                    consolidadoLote.createdAt = Date.now();
+                    await addDoc(collection(db, "censo_institucional"), consolidadoLote);
+                }
+
+                idLoteEnEdicion = null;
                 document.getElementById('form-inventario').reset();
                 document.getElementById('inv-fecha').valueAsDate = new Date();
                 
                 document.getElementById('inv-registra').value = auth.currentUser.displayName ? auth.currentUser.displayName.toUpperCase() : auth.currentUser.email.split('@')[0].toUpperCase();
+                document.getElementById('btn-guardar-inventario').innerText = 'Cerrar y Guardar Consolidado';
 
                 listaRangosCenso = [];
                 renderGrillaGrandeCenso();
                 calcularConsolidadoGlobal();
 
                 await cargarInventariosDesdeCloud();
-                Swal.fire({ icon: 'success', title: 'Inventario Guardado', text:'Los registros se acoplaron de forma segura.' });
+                Swal.fire({ icon: 'success', title: esEdicion ? 'Inventario Actualizado' : 'Inventario Guardado', text:'Los registros se acoplaron de forma segura.' });
             } catch (error) { Swal.fire('Error', error.message, 'error'); }
         });
 
@@ -1251,6 +1259,7 @@ function resetFormularioReingreso() {
                     <td>${l.fecha || 'N/A'}</td><td class="fw-semibold text-primary">${l.repositorio || 'N/A'}</td><td class="text-center fw-bold">${(l.matrizRangos || []).length}</td><td class="text-center">${l.totalTeorico ?? 0}</td><td class="text-center text-danger fw-bold">${l.totalFaltantes ?? 0}</td><td class="text-center table-success fw-bold text-success">${l.totalReal ?? 0}</td><td class="small">${l.registra || 'N/A'}</td>
                     <td class="text-end">
                         <button class="btn btn-sm btn-danger py-1 px-2 me-1" onclick="window.generarPDFInstitucional('${l.id}')"><i class="bi bi-file-pdf"></i> PDF</button>
+                        <button class="btn btn-sm btn-outline-primary py-1 px-2 me-1" onclick="window.editarLoteInventario('${l.id}')"><i class="bi bi-pencil"></i></button>
                         <button class="btn btn-sm btn-outline-secondary py-1 px-2" onclick="window.eliminarRegistroLocal('${l.id}')"><i class="bi bi-trash3"></i></button>
                     </td>
                 `;
@@ -1272,6 +1281,8 @@ function resetFormularioReingreso() {
             renderizarFiltrosConsultas(res);
         }
 
+        let idLoteEnEdicion = null; // null = se está creando un lote nuevo; string = id del lote que se está editando
+
         window.eliminarRegistroLocal = function(id) {
             Swal.fire({
                 title: '¿Expulsar Lote del Inventario?', text: "Se borrará el lote de forma irreversible de la nube.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#800000', confirmButtonText: 'Sí, borrar'
@@ -1281,6 +1292,45 @@ function resetFormularioReingreso() {
                     await cargarInventariosDesdeCloud();
                 }
             });
+        };
+
+        // Carga un lote ya guardado en la nube al formulario de "Cargar Inventario" para editarlo.
+        window.editarLoteInventario = function(id) {
+            const lote = baseDatosInventario.find(l => l.id === id);
+            if (!lote) return;
+
+            idLoteEnEdicion = id;
+
+            document.getElementById('inv-repositorio').value = lote.repositorio || '';
+            document.getElementById('inv-fecha').value = lote.fecha || '';
+            document.getElementById('inv-registra').value = lote.registra || '';
+            document.getElementById('inv-recibe').value = lote.recibe || '';
+            document.getElementById('inv-observaciones').value = (lote.observaciones && lote.observaciones !== 'Ninguna.') ? lote.observaciones : '';
+
+            // Clona profundamente la matriz de rangos para no alterar el registro original mientras se edita.
+            listaRangosCenso = JSON.parse(JSON.stringify(lote.matrizRangos || []));
+            renderGrillaGrandeCenso();
+            calcularConsolidadoGlobal();
+
+            document.getElementById('btn-guardar-inventario').innerText = 'Guardar Cambios del Lote';
+            switchView('view-inventario', `Editando Lote: ${lote.repositorio || ''} (${lote.fecha || ''})`);
+
+            Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Editando lote existente', showConfirmButton: false, timer: 2500 });
+        };
+
+        // Restablece el formulario de inventario a modo "nuevo lote" (usado por el enlace del menú lateral).
+        window.iniciarNuevoInventario = function() {
+            idLoteEnEdicion = null;
+            document.getElementById('form-inventario').reset();
+            document.getElementById('inv-fecha').valueAsDate = new Date();
+            if (auth.currentUser) {
+                document.getElementById('inv-registra').value = auth.currentUser.displayName ? auth.currentUser.displayName.toUpperCase() : auth.currentUser.email.split('@')[0].toUpperCase();
+            }
+            document.getElementById('btn-guardar-inventario').innerText = 'Cerrar y Guardar Consolidado';
+            listaRangosCenso = [];
+            renderGrillaGrandeCenso();
+            calcularConsolidadoGlobal();
+            switchView('view-inventario', 'Carga de Inventario de Existencias');
         };
 
         // Impresión en PDF Estructurado y Homologado (SIRA_fecha)
@@ -1353,13 +1403,13 @@ function resetFormularioReingreso() {
             lote.matrizRangos.forEach(r => {
                 if(r.detalleFaltantes && r.detalleFaltantes.length > 0) {
                     r.detalleFaltantes.forEach(f => {
-                        subFaltantesBody.push([`Tramo ${r.inicial} - ${r.final}`, f.desde, f.hasta, `${f.cantidad} unidad(es)`]);
+                        subFaltantesBody.push([`Tramo ${r.inicial} - ${r.final}`, r.archivamiento, f.desde, f.hasta, `${f.cantidad} unidad(es)`]);
                     });
                 }
             });
 
             if(subFaltantesBody.length === 0) {
-                subFaltantesBody.push(['-', 'El lote completo coincide con los rangos correlativos. Sin exclusiones.', '-', '-']);
+                subFaltantesBody.push(['-', '-', 'El lote completo coincide con los rangos correlativos. Sin exclusiones.', '-', '-']);
             }
 
             doc.autoTable({
@@ -1368,18 +1418,29 @@ function resetFormularioReingreso() {
                 theme: 'striped',
                 headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], halign: 'center', fontSize: 8.5 },
                 styles: { fontSize: 8, cellPadding: 2 },
-                columnStyles: { 0: { cellWidth: 45 }, 1: { halign: 'center', cellWidth: 45 }, 2: { halign: 'center', cellWidth: 45 }, 3: { halign: 'center', cellWidth: 45 } },
-                head: [['Pertenece al Tramo', 'Faltante Desde', 'Faltante Hasta', 'Cantidad Saltada']],
+                columnStyles: { 0: { cellWidth: 40 }, 1: { halign: 'center', cellWidth: 25 }, 2: { halign: 'center', cellWidth: 35 }, 3: { halign: 'center', cellWidth: 35 }, 4: { halign: 'center', cellWidth: 35 } },
+                head: [['Pertenece al Tramo', 'Archivamiento', 'Faltante Desde', 'Faltante Hasta', 'Cantidad Saltada']],
                 body: subFaltantesBody
             });
 
             currentY = doc.lastAutoTable.finalY + 8;
 
             doc.setFont("Inter", "bold"); doc.setFontSize(9); doc.text("OBSERVACIONES GENERALES DEL COMPLEJO ARCHIVÍSTICO:", 15, currentY);
-            currentY += 4; doc.setFont("Inter", "normal"); doc.setFontSize(8.5);
-            doc.text(lote.observaciones, 15, currentY, { maxWidth: pageWidth - 30 });
+            currentY += 5; doc.setFont("Inter", "normal"); doc.setFontSize(8.5);
+            const textoObservaciones = lote.observaciones && lote.observaciones.trim() ? lote.observaciones : 'Ninguna.';
+            const lineasObservaciones = doc.splitTextToSize(textoObservaciones, pageWidth - 30);
+            doc.text(lineasObservaciones, 15, currentY);
+            currentY += (lineasObservaciones.length * 4) + 15;
 
-            currentY = 245; 
+            // Si no queda espacio suficiente para el bloque de firmas, se pasa a una nueva página
+            // en vez de dejar que se encime con las observaciones o el pie de página.
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const espacioNecesarioFirmas = 30;
+            if (currentY + espacioNecesarioFirmas > pageHeight - 20) {
+                doc.addPage();
+                currentY = 30;
+            }
+
             doc.setLineWidth(0.3); doc.setDrawColor(100, 100, 100);
             doc.line(25, currentY, 85, currentY);     
             doc.line(pageWidth - 85, currentY, pageWidth - 25, currentY); 
