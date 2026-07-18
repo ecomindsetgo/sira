@@ -1376,25 +1376,27 @@ doc.text("SAAMIR", pageWidth / 2, 31, {
     align: "center"
 });
 
-// Nombre del sistema (UNA SOLA LÍNEA)
+// Nombre del sistema (UNA SOLA LÍNEA, tamaño auto-ajustado: se ve más grande
+// pero se reduce automáticamente si el ancho de la hoja no alcanza)
 doc.setFont("Inter", "bold");
-doc.setFontSize(10); // o 7.5 si aún no entra
 doc.setTextColor(128, 0, 0);
 
-doc.text(
-    "Sistema de Administración de Archivos, Microformas, Inventario y Reportes",
-    pageWidth / 2,
-    36,
-    {
-        align: "center",
-        maxWidth: 180 // puedes incluso eliminar esta línea
-    }
-);
+const textoSubtitulo = "Sistema de Administración de Archivos, Microformas, Inventario y Reportes";
+const anchoDisponibleSubtitulo = pageWidth - 30; // 15mm de margen a cada lado
+
+let subtituloFontSize = 12; // antes estaba fijo en 10, ahora arranca más grande
+doc.setFontSize(subtituloFontSize);
+while (doc.getTextWidth(textoSubtitulo) > anchoDisponibleSubtitulo && subtituloFontSize > 8) {
+    subtituloFontSize -= 0.5;
+    doc.setFontSize(subtituloFontSize);
+}
+
+doc.text(textoSubtitulo, pageWidth / 2, 37, { align: "center" });
 
 // Línea divisoria
 doc.setLineWidth(0.4);
 doc.setDrawColor(128, 0, 0);
-doc.line(15, 41, pageWidth - 15, 41);
+doc.line(15, 43, pageWidth - 15, 43);
 
 // Título
 doc.setFont("Inter", "bold");
@@ -1403,28 +1405,28 @@ doc.setTextColor(0, 0, 0);
 doc.text(
     "INFORME CONSOLIDADO DE INVENTARIO DE EXISTENCIAS",
     pageWidth / 2,
-    49,
+    51,
     { align: "center" }
 );
 // ===============================
 // DATOS DEL INFORME
 // ===============================
 
-doc.setFontSize(9);
+doc.setFontSize(9.5);
 
 // Repositorio
 doc.setFont("Inter", "bold");
-doc.text("Repositorio / Sede:", 15, 60);
+doc.text("Repositorio / Sede:", 15, 63);
 
 doc.setFont("Inter", "normal");
-doc.text(lote.repositorio, 48, 60);
+doc.text(String(lote.repositorio), 52, 63);
 
 // Fecha
 doc.setFont("Inter", "bold");
-doc.text("Fecha de Ejecución:", 15, 65);
+doc.text("Fecha de Ejecución:", 15, 69);
 
 doc.setFont("Inter", "normal");
-doc.text(lote.fecha, 48, 65);
+doc.text(String(lote.fecha), 52, 69);
             const filasTablaAutotable = lote.matrizRangos.map((r, idx) => [
                 (idx + 1).toString(),
                 r.inicial,
@@ -1438,7 +1440,7 @@ doc.text(lote.fecha, 48, 65);
             filasTablaAutotable.push([ 'Σ', 'TOTAL CONSOLIDADO', '-', '-', lote.totalTeorico.toString(), lote.totalFaltantes.toString(), lote.totalReal.toString() ]);
 
             doc.autoTable({
-                startY: 75,
+                startY: 78,
                 margin: { left: 15, right: 15 },
                 theme: 'grid',
                 headStyles: { fillColor: [128, 0, 0], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center', fontSize: 9 },
