@@ -1368,43 +1368,43 @@ doc.text("ARCHIVO DESCONCENTRADO DE LA CSJSA", pageWidth / 2, 24, {
 });
 
 // SAAMIR
+// SAAMIR
 doc.setFont("Inter", "bold");
-doc.setFontSize(18);
+doc.setFontSize(16);
 doc.setTextColor(128, 0, 0);
-doc.text("SAAMIR", pageWidth / 2, 32, {
+doc.text("SAAMIR", pageWidth / 2, 31, {
     align: "center"
 });
 
-// Nombre del sistema
-doc.setFont("Inter", "normal");
-doc.setFontSize(9);
-doc.setTextColor(60, 60, 60);
+// Nombre del sistema (UNA SOLA LÍNEA)
+doc.setFont("Inter", "bold");
+doc.setFontSize(8); // o 7.5 si aún no entra
+doc.setTextColor(128, 0, 0);
+
 doc.text(
     "Sistema de Administración de Archivos, Microformas, Inventario y Reportes",
     pageWidth / 2,
-    38,
+    36,
     {
         align: "center",
-        maxWidth: 170
+        maxWidth: 180 // puedes incluso eliminar esta línea
     }
 );
 
 // Línea divisoria
 doc.setLineWidth(0.4);
 doc.setDrawColor(128, 0, 0);
-doc.line(15, 45, pageWidth - 15, 45);
+doc.line(15, 41, pageWidth - 15, 41);
 
-// Título del informe
+// Título
 doc.setFont("Inter", "bold");
 doc.setFontSize(12);
 doc.setTextColor(0, 0, 0);
 doc.text(
     "INFORME CONSOLIDADO DE INVENTARIO DE EXISTENCIAS",
     pageWidth / 2,
-    53,
-    {
-        align: "center"
-    }
+    49,
+    { align: "center" }
 );
 // ===============================
 // DATOS DEL INFORME
