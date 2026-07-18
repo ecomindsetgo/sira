@@ -1396,14 +1396,14 @@ function resetFormularioReingreso() {
             let currentY = doc.lastAutoTable.finalY + 8;
 
             doc.setFont("Inter", "bold"); doc.setFontSize(9);
-            doc.text("DETALLE ESPECÍFICO DE EXPEDIENTES EXCLUIDOS (SALTOS/FALTANTES):", 15, currentY);
+            doc.text("DETALLE ESPECÍFICO DE EXPEDIENTES EXCLUIDOS:", 15, currentY);
             currentY += 3;
 
             const subFaltantesBody = [];
             lote.matrizRangos.forEach(r => {
                 if(r.detalleFaltantes && r.detalleFaltantes.length > 0) {
                     r.detalleFaltantes.forEach(f => {
-                        subFaltantesBody.push([`Tramo ${r.inicial} - ${r.final}`, r.archivamiento, f.desde, f.hasta, `${f.cantidad} unidad(es)`]);
+                        subFaltantesBody.push([`${r.inicial} - ${r.final}`, r.archivamiento, f.desde, f.hasta, `${f.cantidad} unidad(es)`]);
                     });
                 }
             });
@@ -1419,13 +1419,13 @@ function resetFormularioReingreso() {
                 headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], halign: 'center', fontSize: 8.5 },
                 styles: { fontSize: 8, cellPadding: 2 },
                 columnStyles: { 0: { cellWidth: 40 }, 1: { halign: 'center', cellWidth: 25 }, 2: { halign: 'center', cellWidth: 35 }, 3: { halign: 'center', cellWidth: 35 }, 4: { halign: 'center', cellWidth: 35 } },
-                head: [['Pertenece al Tramo', 'Archivamiento', 'Faltante Desde', 'Faltante Hasta', 'Cantidad Saltada']],
+                head: [['Rango', 'Archivamiento', 'Faltante Desde', 'Faltante Hasta', 'Cantidad']],
                 body: subFaltantesBody
             });
 
             currentY = doc.lastAutoTable.finalY + 8;
 
-            doc.setFont("Inter", "bold"); doc.setFontSize(9); doc.text("OBSERVACIONES GENERALES DEL COMPLEJO ARCHIVÍSTICO:", 15, currentY);
+            doc.setFont("Inter", "bold"); doc.setFontSize(9); doc.text("OBSERVACIONES GENERALES DEL INVENTARIO:", 15, currentY);
             currentY += 5; doc.setFont("Inter", "normal"); doc.setFontSize(8.5);
             const textoObservaciones = lote.observaciones && lote.observaciones.trim() ? lote.observaciones : 'Ninguna.';
             const lineasObservaciones = doc.splitTextToSize(textoObservaciones, pageWidth - 30);
