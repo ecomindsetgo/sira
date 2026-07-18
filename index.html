@@ -1372,17 +1372,17 @@ doc.setFontSize(9.5);
 
 // Repositorio
 doc.setFont("Inter", "bold");
-doc.text("Repositorio / Sede:", 15, 63);
+doc.text("Repositorio / Sede:", 15, 52);
 
 doc.setFont("Inter", "normal");
-doc.text(String(lote.repositorio), 52, 63);
+doc.text(String(lote.repositorio), 48, 52);
 
 // Fecha
 doc.setFont("Inter", "bold");
-doc.text("Fecha de Ejecución:", 15, 69);
+doc.text("Fecha de Ejecución:", 15, 57);
 
 doc.setFont("Inter", "normal");
-doc.text(String(lote.fecha), 52, 69);
+doc.text(String(lote.fecha), 48, 57);
             const filasTablaAutotable = lote.matrizRangos.map((r, idx) => [
                 (idx + 1).toString(),
                 r.inicial,
@@ -1396,7 +1396,7 @@ doc.text(String(lote.fecha), 52, 69);
             filasTablaAutotable.push([ 'Σ', 'TOTAL CONSOLIDADO', '-', '-', lote.totalTeorico.toString(), lote.totalFaltantes.toString(), lote.totalReal.toString() ]);
 
             doc.autoTable({
-                startY: 78,
+                startY: 64,
                 margin: { left: 15, right: 15 },
                 theme: 'grid',
                 headStyles: { fillColor: [128, 0, 0], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center', fontSize: 9 },
