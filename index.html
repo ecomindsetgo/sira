@@ -1353,45 +1353,42 @@ function resetFormularioReingreso() {
 // ===============================
 
 doc.setFont("Inter", "bold"); doc.setFontSize(11); doc.setTextColor(40, 40, 40);
-            doc.text("CORTE SUPERIOR DE JUSTICIA DEL SANTA", pageWidth / 2, 18, { align: "center" });
-            doc.setFontSize(10); doc.setFont("Inter", "normal");
-            doc.text("ARCHIVO DESCONCENTRADO DE LA CSJSA", pageWidth / 2, 23, { align: "center" });
-            
-            doc.setFont("Inter", "bold"); doc.setFontSize(10.5); doc.setTextColor(128, 0, 0); 
-            doc.text("SAAMIR - Sistema de Administración de Archivos, Microformas, Inventario y Reportes", pageWidth / 2, 30, { align: "center" });
+doc.text("CORTE SUPERIOR DE JUSTICIA DEL SANTA", pageWidth / 2, 18, { align: "center" });
+doc.setFontSize(10); doc.setFont("Inter", "normal");
+doc.text("ARCHIVO DESCONCENTRADO DE LA CSJSA", pageWidth / 2, 23, { align: "center" });
 
-            doc.setLineWidth(0.4); doc.setDrawColor(128, 0, 0); doc.line(15, 34, pageWidth - 15, 34);
+doc.setFont("Inter", "bold"); doc.setFontSize(12); doc.setTextColor(128, 0, 0); 
+doc.text("SAAMIR - Sistema de Administración de Archivos, Microformas, Inventario y Reportes", pageWidth / 2, 30, { align: "center" });
+doc.setLineWidth(0.4); doc.setDrawColor(128, 0, 0); doc.line(15, 34, pageWidth - 15, 34);
+doc.setFontSize(12); doc.setTextColor(0, 0, 0);
+doc.text("INFORME CONSOLIDADO DE INVENTARIO DE EXISTENCIAS", pageWidth / 2, 41, { align: "center" });
 
-            doc.setFontSize(12); doc.setTextColor(0, 0, 0);
-            doc.text("INFORME CONSOLIDADO DE INVENTARIO DE EXISTENCIAS", pageWidth / 2, 43, { align: "center" });
 // ===============================
 // DATOS DEL INFORME
 // ===============================
-
 doc.setFontSize(9.5);
 
 // Repositorio
 doc.setFont("Inter", "bold");
-doc.text("Repositorio / Sede:", 15, 52);
-
+doc.text("Repositorio / Sede:", 15, 48);
 doc.setFont("Inter", "normal");
-doc.text(String(lote.repositorio), 48, 52);
+doc.text(String(lote.repositorio), 48, 48);
 
 // Fecha
 doc.setFont("Inter", "bold");
-doc.text("Fecha de Ejecución:", 15, 57);
-
+doc.text("Fecha de Ejecución:", 15, 53);
 doc.setFont("Inter", "normal");
-doc.text(String(lote.fecha), 48, 57);
-            const filasTablaAutotable = lote.matrizRangos.map((r, idx) => [
-                (idx + 1).toString(),
-                r.inicial,
-                r.final,
-                r.archivamiento,
-                r.teorico.toString(),
-                r.faltantes.toString(),
-                r.real.toString()
-            ]);
+doc.text(String(lote.fecha), 48, 53);
+
+const filasTablaAutotable = lote.matrizRangos.map((r, idx) => [
+    (idx + 1).toString(),
+    r.inicial,
+    r.final,
+    r.archivamiento,
+    r.teorico.toString(),
+    r.faltantes.toString(),
+    r.real.toString()
+]);
 
             filasTablaAutotable.push([ 'Σ', 'TOTAL CONSOLIDADO', '-', '-', lote.totalTeorico.toString(), lote.totalFaltantes.toString(), lote.totalReal.toString() ]);
 
