@@ -173,7 +173,6 @@
             display: block;
         }
 
-        /* Estilos específicos para impresión limpia del Dashboard y Microformas */
         @media print {
             body * {
                 visibility: hidden;
@@ -249,7 +248,6 @@
                     <i class="bi bi-arrow-return-left"></i> Reingresos
                 </a>
                 <a class="nav-link" data-view="view-consultas-reingresos" onclick="switchView('view-consultas-reingresos', 'Consultar Historial de Reingresos')"><i class="bi bi-search"></i> Consultar Reingresos</a>
-                <!-- Menú de Microformas exclusivo (Alfredo, Roberto Dávila, Jorge Desposorio) -->
                 <a class="nav-link" id="menu-link-microformas" href="#" onclick="switchView('view-microformas', 'Control de Producción de Microformas')" style="display: none;">
                     <i class="bi bi-file-earmark-spreadsheet-fill"></i> Control Microformas
                 </a>
@@ -259,7 +257,6 @@
                 <a class="nav-link" href="#" onclick="switchView('view-configuracion', 'Consola de Configuración')">
                     <i class="bi bi-gear-fill"></i> Configuración
                 </a>
-                <!-- Menú de auditoría exclusivo (controlado por JS para Alfredo) -->
                 <a class="nav-link" id="menu-link-auditoria" href="#" onclick="switchView('view-auditoria', 'Historial y Trazabilidad del Sistema')" style="display: none;">
                     <i class="bi bi-clock-history"></i> Auditoría de Cambios
                 </a>
@@ -343,7 +340,6 @@
                     </tr>
                 </thead>
                 <tbody id="tabla-historial-reingresos">
-                    <!-- Los datos se cargarán aquí -->
                 </tbody>
             </table>
         </div>
@@ -352,14 +348,11 @@
 
             <!-- DASHBOARD GLOBAL -->
             <section id="view-dashboard" class="view-section active">
-                
-                <!-- Cabecera imprimible del Dashboard -->
                 <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
                     <div>
                         <h4 class="fw-bold text-dark m-0"><i class="bi bi-grid-1x2-fill me-2 text-primary"></i>Dashboard Global Institucional</h4>
                         <p class="text-muted small m-0">Corte Superior de Justicia del Santa - Archivo Desconcentrado</p>
                     </div>
-                    <!-- Botón exclusivo para impresión de Alfredo (oculto por defecto vía inline style y manejado por JS) -->
                     <button class="btn btn-outline-dark btn-sm d-flex align-items-center gap-2 no-print" id="btn-imprimir-dashboard" onclick="window.print()" style="display: none !important;">
                         <i class="bi bi-printer"></i> Imprimir Reporte Global
                     </button>
@@ -417,6 +410,78 @@
                                     </div>
                                     <div class="dashboard-icon-box bg-info bg-opacity-10 text-info">
                                         <i class="bi bi-percent"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NUEVA SECCIÓN: Indicadores de Producción de Microformas en el Dashboard -->
+                <div class="mb-4">
+                    <h6 class="text-uppercase fw-bold text-muted small mb-3 tracking-wider"><i class="bi bi-file-earmark-spreadsheet-fill me-1 text-danger"></i> Producción de Microformas Digitales (Acumulado)</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-sm-6 col-lg">
+                            <div class="card dashboard-card p-3 border-start border-dark border-4">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <p class="text-muted small text-uppercase fw-bold mb-1">Bloques</p>
+                                        <h4 class="fw-bold m-0" id="dash-micro-bloques">0</h4>
+                                    </div>
+                                    <div class="dashboard-icon-box bg-dark bg-opacity-10 text-dark">
+                                        <i class="bi bi-collection"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-lg">
+                            <div class="card dashboard-card p-3 border-start border-primary border-4">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <p class="text-muted small text-uppercase fw-bold mb-1">Paquetes</p>
+                                        <h4 class="fw-bold m-0" id="dash-micro-paquetes">0</h4>
+                                    </div>
+                                    <div class="dashboard-icon-box bg-primary bg-opacity-10 text-primary">
+                                        <i class="bi bi-box-seam"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-4 col-lg">
+                            <div class="card dashboard-card p-3 border-start border-success border-4">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <p class="text-muted small text-uppercase fw-bold mb-1">Expedientes</p>
+                                        <h4 class="fw-bold m-0 text-success" id="dash-micro-expedientes">0</h4>
+                                    </div>
+                                    <div class="dashboard-icon-box bg-success bg-opacity-10 text-success">
+                                        <i class="bi bi-journal-check"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-4 col-lg">
+                            <div class="card dashboard-card p-3 border-start border-warning border-4">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <p class="text-muted small text-uppercase fw-bold mb-1">Imágenes</p>
+                                        <h4 class="fw-bold m-0" id="dash-micro-imagenes">0</h4>
+                                    </div>
+                                    <div class="dashboard-icon-box bg-warning bg-opacity-10 text-warning">
+                                        <i class="bi bi-images"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-4 col-lg">
+                            <div class="card dashboard-card p-3 border-start border-danger border-4">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <p class="text-muted small text-uppercase fw-bold mb-1">Folios</p>
+                                        <h4 class="fw-bold m-0 text-danger" id="dash-micro-folios">0</h4>
+                                    </div>
+                                    <div class="dashboard-icon-box bg-danger bg-opacity-10 text-danger">
+                                        <i class="bi bi-file-earmark-text"></i>
                                     </div>
                                 </div>
                             </div>
@@ -532,14 +597,20 @@
             <!-- MÓDULO DE CONTROL DE MICROFORMAS -->
             <section id="view-microformas" class="view-section">
                 <div class="card p-4 border-0 shadow-sm mb-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3 no-print">
-                        <div>
-                            <h4 class="fw-bold text-dark m-0"><i class="bi bi-file-earmark-spreadsheet-fill me-2 text-primary"></i>Control de Producción de Microformas Digitales</h4>
-                            <p class="text-muted small m-0">Corte Superior de Justicia del Santa - Apoyo Administrativo (CSJSA)</p>
+                    <div class="text-center mb-4 pb-3 border-bottom">
+                        <div class="d-flex justify-content-center align-items-center mb-2">
+                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAAH0CAYAAADL1t+KAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAFIWlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0=" alt="Logo LPMD" style="height: 65px; object-fit: contain;" id="img-logo-lpmd-render">
                         </div>
+                        <h6 class="fw-bold text-dark m-0">CORTE SUPERIOR DE JUSTICIA DEL SANTA</h6>
+                        <p class="text-muted small m-0">Área de Apoyo Administrativo - Línea de Producción de Microformas Digitales</p>
+                        <h5 class="fw-bold text-primary mt-2" style="letter-spacing: 0.5px;">CONTROL DE PRODUCCIÓN DE MICROFORMAS DIGITALES</h5>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+                        <span class="badge bg-secondary p-2">Registro Oficial de Bloques</span>
                         <div class="d-flex gap-2">
                             <button class="btn btn-outline-dark btn-sm d-flex align-items-center gap-1" onclick="window.print()">
-                                <i class="bi bi-printer"></i> Imprimir Reporte
+                                <i class="bi bi-printer"></i> Imprimir Reporte PDF
                             </button>
                             <button class="btn btn-primary btn-sm d-flex align-items-center gap-1" id="btn-nueva-microforma" onclick="abrirModalMicroforma()">
                                 <i class="bi bi-plus-circle"></i> + Agregar Bloque
@@ -571,10 +642,8 @@
                                 </tr>
                             </thead>
                             <tbody id="tabla-microformas-body">
-                                <!-- Se llena dinámicamente -->
                             </tbody>
                             <tfoot class="table-secondary fw-bold" id="tabla-microformas-foot">
-                                <!-- Totales y promedios -->
                             </tfoot>
                         </table>
                     </div>
@@ -805,7 +874,7 @@
                 </div>
             </section>
 
-            <!-- AUDITORÍA GENERAL DE CAMBIOS (EXCLUSIVA PARA ALFREDO CRUZADO / ACRUZADO) -->
+            <!-- AUDITORÍA GENERAL DE CAMBIOS -->
             <section id="view-auditoria" class="view-section">
                 <div class="card p-4 border-0 shadow-sm">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -833,7 +902,6 @@
                                 </tr>
                             </thead>
                             <tbody id="tabla-auditoria-global">
-                                <!-- Los datos se cargarán dinámicamente -->
                             </tbody>
                         </table>
                     </div>
@@ -1063,7 +1131,7 @@
         const PERMISOS = {
             reingresos_escritura: ["ALFREDO CRUZADO", "ACRUZADO", "ROBERTO DAVILA", "RDAVILA", "JORGE IZQUIERDO", "JIZQUIERDO", "MANUEL BARANDIARAN", "MBARANDIARAN"],
             inventario_escritura: ["ALFREDO CRUZADO", "ACRUZADO", "ROBERTO DAVILA", "RDAVILA", "JORGE IZQUIERDO", "JIZQUIERDO", "MANUEL BARANDIARAN", "MBARANDIARAN", "TEFILO GABINO", "TGABINO"],
-            microformas_escritura: ["ALFREDO CRUZADO", "ACRUZADO"] // Solo Alfredo edita microformas. Roberto y Jorge solo visualizan e imprimen.
+            microformas_escritura: ["ALFREDO CRUZADO", "ACRUZADO"]
         };
 
         function normalizarTexto(texto) {
@@ -1113,7 +1181,6 @@
                 }
             }
 
-            // Control de Botón de Nueva Microforma (Solo Alfredo)
             const btnNuevaMicroforma = document.getElementById('btn-nueva-microforma');
             if (btnNuevaMicroforma) {
                 btnNuevaMicroforma.style.display = puedeMicroformasEscritura ? 'flex' : 'none';
@@ -1136,28 +1203,13 @@
             }
 
             document.querySelectorAll('#view-reingresos input, #view-reingresos select').forEach(el => el.disabled = !puedeReingresos);
-
-            document.getElementById('form-inventario')?.querySelectorAll('input, select, button[type=submit]')
-                .forEach(el => el.disabled = !puedeInventario);
+            document.getElementById('form-inventario')?.querySelectorAll('input, select, button[type=submit]').forEach(el => el.disabled = !puedeInventario);
 
             const btnAgregarRango = document.querySelector('button[onclick="abrirModalRango()"]');
             if (btnAgregarRango) {
                 btnAgregarRango.disabled = !puedeInventario;
                 btnAgregarRango.style.pointerEvents = puedeInventario ? 'auto' : 'none';
                 btnAgregarRango.classList.toggle('opacity-50', !puedeInventario);
-            }
-
-            const avisoExistente = document.getElementById('aviso-solo-consulta');
-            if (!puedeReingresos || !puedeInventario || !puedeMicroformasEscritura) {
-                if (!avisoExistente) {
-                    const aviso = document.createElement('div');
-                    aviso.id = 'aviso-solo-consulta';
-                    aviso.className = 'alert alert-warning py-2 px-3 mb-3 small fw-medium';
-                    aviso.innerHTML = '<i class="bi bi-eye me-1"></i> Modo de visualización/restringido: algunas acciones están reservadas para administradores.';
-                    document.getElementById('main-content')?.prepend(aviso);
-                }
-            } else if (avisoExistente) {
-                avisoExistente.remove();
             }
         }
 
@@ -1218,7 +1270,6 @@
             });
             
             selectRec.innerHTML = '<option value="" selected disabled>Seleccione personal...</option>';
-            
             Object.keys(listaPersonalRoles).forEach(p => {
                 if (p !== usuarioActivoNombre) {
                     selectRec.options.add(new Option(p, p));
@@ -1304,7 +1355,6 @@
             const password = document.getElementById('login-password').value;
             try {
                 localStorage.setItem('saamir_ultimo_correo', email);
-
                 await signInWithEmailAndPassword(auth, email, password);
                 Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Acceso Autorizado', showConfirmButton: false, timer: 2000 });
             } catch (error) {
@@ -1323,9 +1373,7 @@
                 document.getElementById('inv-registra').value = userTitle;
                 
                 const campoEntregado = document.getElementById('re-entregado');
-                if (campoEntregado) {
-                    campoEntregado.value = userTitle;
-                }
+                if (campoEntregado) campoEntregado.value = userTitle;
 
                 document.getElementById('perf-email').value = user.email || '';
                 document.getElementById('perf-nombre').value = user.displayName || '';
@@ -1339,9 +1387,9 @@
                 inicializarSelectsReingresos();
                 resetFormularioReingreso();
                 
-                await cargarInventariosDesdeCloud().catch(err => console.error("Error al cargar inventarios:", err));
-                await cargarHistorialReingresosParaDashboard().catch(err => console.error("Error al cargar reingresos:", err));
-                await cargarMicroformasDesdeCloud().catch(err => console.error("Error al cargar microformas:", err));
+                await cargarInventariosDesdeCloud().catch(err => console.error(err));
+                await cargarHistorialReingresosParaDashboard().catch(err => console.error(err));
+                await cargarMicroformasDesdeCloud().catch(err => console.error(err));
             } else {
                 document.getElementById('app-container').style.display = 'none';
                 document.getElementById('login-container').style.display = 'flex';
@@ -1493,6 +1541,7 @@
 
                 baseDatosMicroformas.sort((a, b) => (a.bloque || 0) - (b.bloque || 0));
                 renderTablaMicroformas();
+                actualizarDashboardGlobal();
             } catch (e) {
                 console.error("Error al cargar microformas:", e);
             }
@@ -1903,7 +1952,7 @@
                 baseDatosReingresos.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
                 actualizarDashboardGlobal();
             } catch (error) {
-                console.error("Error al cargar reingresos para el dashboard:", error);
+                console.error(error);
             }
         }
 
@@ -1923,6 +1972,26 @@
             document.getElementById('dash-porcentaje').innerText = porcentajeIntegridad + "%";
             const elPorcentaje = document.getElementById('dash-porcentaje');
             elPorcentaje.style.color = porcentajeIntegridad < 90 ? 'var(--sipa-primary)' : 'inherit';
+
+            // Cálculo y renderizado de acumulados de microformas en el dashboard
+            let sumBloques = baseDatosMicroformas.length;
+            let sumPaquetes = 0;
+            let sumExpedientes = 0;
+            let sumImágenes = 0;
+            let sumFolios = 0;
+
+            baseDatosMicroformas.forEach(m => {
+                sumPaquetes += Number(m.cantPaquetes) || 0;
+                sumExpedientes += Number(m.expedientes) || 0;
+                sumImágenes += Number(m.imagenes) || 0;
+                sumFolios += Number(m.folios) || 0;
+            });
+
+            document.getElementById('dash-micro-bloques').innerText = sumBloques.toLocaleString();
+            document.getElementById('dash-micro-paquetes').innerText = sumPaquetes.toLocaleString();
+            document.getElementById('dash-micro-expedientes').innerText = sumExpedientes.toLocaleString();
+            document.getElementById('dash-micro-imagenes').innerText = sumImágenes.toLocaleString();
+            document.getElementById('dash-micro-folios').innerText = sumFolios.toLocaleString();
 
             const hoyStr = new Date().toISOString().split('T')[0];
             const mesActualStr = hoyStr.substring(0, 7);
@@ -2039,7 +2108,6 @@
             if (!lote) return;
 
             idLoteEnEdicion = id;
-
             document.getElementById('inv-repositorio').value = lote.repositorio || '';
             document.getElementById('inv-fecha').value = lote.fecha || '';
             document.getElementById('inv-registra').value = lote.registra || '';
@@ -2090,7 +2158,7 @@
                             detalle: `Acceso autorizado al sistema desde el correo: ${d.email || 'N/A'}`
                         });
                     });
-                } catch(err) { console.warn("No se pudo cargar auditoria_logins:", err); }
+                } catch(err) { console.warn(err); }
 
                 try {
                     const snapCenso = await getDocs(collection(db, "censo_institucional"));
@@ -2129,7 +2197,7 @@
                             });
                         }
                     });
-                } catch(err) { console.warn("No se pudo cargar censo_institucional:", err); }
+                } catch(err) { console.warn(err); }
 
                 try {
                     const snapReingresos = await getDocs(collection(db, "reingresos"));
@@ -2168,7 +2236,7 @@
                             });
                         }
                     });
-                } catch(err) { console.warn("No se pudo cargar reingresos:", err); }
+                } catch(err) { console.warn(err); }
 
                 try {
                     const snapMicro = await getDocs(collection(db, "control_microformas"));
@@ -2184,7 +2252,7 @@
                             detalle: `Bloque N° ${d.bloque} | Rango: ${d.rango} | Juzgado: ${d.juzgado}`
                         });
                     });
-                } catch(err) { console.warn("No se pudo cargar control_microformas:", err); }
+                } catch(err) { console.warn(err); }
 
                 logs.sort((a, b) => b.timestamp - a.timestamp);
 
@@ -2211,7 +2279,7 @@
                 });
 
             } catch (error) {
-                console.error("Error al cargar auditoría:", error);
+                console.error(error);
                 document.getElementById('tabla-auditoria-global').innerHTML = `<tr><td colspan="5" class="text-center text-danger py-3">Error al cargar el historial de cambios.</td></tr>`;
             }
         };
@@ -2397,7 +2465,6 @@
             if (!registro) return;
 
             idReingresoEnEdicion = id;
-
             document.getElementById('re-fecha').value = registro.fecha || '';
             document.getElementById('re-solicitante').value = registro.solicitante || '';
             document.getElementById('re-local').value = registro.local || '';
@@ -2486,7 +2553,7 @@
                 baseDatosReingresos.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
                 filtrarHistorialReingresos();
             } catch (error) {
-                console.error("Error al cargar historial de reingresos:", error);
+                console.error(error);
             }
         };
 
@@ -2538,8 +2605,6 @@
                 tbody.insertAdjacentHTML('beforeend', fila);
             });
         }
-
-        const LOGO_PJAD_BASE64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAAH0CAYAAADL1t+KAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAFIWlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0=";
 
         function construirPDFReingreso({ correlativo, fecha, solicitante, local, entregado, expedientes }) {
             const { jsPDF } = window.jspdf;
