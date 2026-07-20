@@ -858,15 +858,30 @@ function aplicarPermisos(nombreUsuario) {
             const puedeReingresos = PERMISOS.reingresos_escritura.includes(nombreUsuario);
             const puedeInventario = PERMISOS.inventario_escritura.includes(nombreUsuario);
 
-            // Permisos de Reingresos
+            // Permisos de Reingresos (incluyendo el botón de agregar fila y los de generar/guardar)
             document.getElementById('btn-guardar-reingreso')?.toggleAttribute('disabled', !puedeReingresos);
+            
+            // 🔒 BLOQUEO ESPECÍFICO PARA REINGRESOS: Botón "+ Agregar Expediente" y botón "Generar PDF"
+            const btnAgregarExpediente = document.querySelector('button[onclick="agregarFilaReingreso()"]');
+            if (btnAgregarExpediente) {
+                btnAgregarExpediente.disabled = !puedeReingresos;
+                btnAgregarExpediente.style.pointerEvents = puedeReingresos ? 'auto' : 'none';
+                btnAgregarExpediente.classList.toggle('opacity-50', !puedeReingresos);
+            }
+
+            const btnGenerarPDF = document.querySelector('button[onclick="generarReporteReingresoPDF()"]');
+            if (btnGenerarPDF) {
+                btnGenerarPDF.disabled = !puedeReingresos;
+                btnGenerarPDF.style.pointerEvents = puedeReingresos ? 'auto' : 'none';
+                btnGenerarPDF.classList.toggle('opacity-50', !puedeReingresos);
+            }
+
             document.querySelectorAll('#view-reingresos input, #view-reingresos select').forEach(el => el.disabled = !puedeReingresos);
 
             // Permisos de Inventario (Formulario general y botones de rangos)
             document.getElementById('form-inventario')?.querySelectorAll('input, select, button[type=submit]')
                 .forEach(el => el.disabled = !puedeInventario);
 
-            // 🔒 BLOQUEO ESPECÍFICO: Botón "+ Agregar Rango al Lote" y botones de acción en la grilla
             const btnAgregarRango = document.querySelector('button[onclick="abrirModalRango()"]');
             if (btnAgregarRango) {
                 btnAgregarRango.disabled = !puedeInventario;
