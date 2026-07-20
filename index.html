@@ -460,7 +460,7 @@
                         <h4 class="fw-bold text-dark m-0"><i class="bi bi-grid-1x2-fill me-2 text-primary"></i>Dashboard Global Institucional</h4>
                         <p class="text-muted small m-0">Corte Superior de Justicia del Santa - Archivo Desconcentrado</p>
                     </div>
-                    <button class="btn btn-outline-dark btn-sm d-flex align-items-center gap-2 no-print" id="btn-imprimir-dashboard" onclick="window.print()">
+                    <button class="btn btn-outline-dark btn-sm d-flex align-items-center gap-2 no-print" id="btn-imprimir-dashboard">
                         <i class="bi bi-printer"></i> Imprimir Reporte Global
                     </button>
                 </div>
@@ -714,7 +714,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-3 no-print flex-wrap gap-2">
                         <span class="badge bg-secondary p-2">Registro Oficial de Bloques</span>
                         <div class="d-flex gap-2 flex-wrap">
-                            <button class="btn btn-outline-dark btn-sm d-flex align-items-center gap-1" onclick="window.print()">
+                            <button class="btn btn-outline-dark btn-sm d-flex align-items-center gap-1" id="btn-imprimir-microformas">
                                 <i class="bi bi-printer"></i> Imprimir Reporte PDF
                             </button>
                             <button class="btn btn-primary btn-sm d-flex align-items-center gap-1" id="btn-nueva-microforma" onclick="abrirModalMicroforma()">
@@ -981,6 +981,39 @@
 
             <!-- AUDITORÍA GENERAL DE CAMBIOS -->
             <section id="view-auditoria" class="view-section">
+                <div class="card p-3 p-md-4 border-0 shadow-sm mb-3">
+                    <h6 class="form-section-title"><i class="bi bi-funnel me-2"></i>Filtros del Log de Auditoría</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-3">
+                            <label class="form-label small">Fecha Específica</label>
+                            <input type="date" class="form-control form-control-sm" id="filtro-aud-fecha" onchange="filtrarAuditoria()">
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label small">Acción / Estado</label>
+                            <select class="form-select form-select-sm" id="filtro-aud-accion" onchange="filtrarAuditoria()">
+                                <option value="">Todas las acciones</option>
+                                <option value="Inicio de Sesión">Inicio de Sesión</option>
+                                <option value="Creación de Lote">Creación de Lote</option>
+                                <option value="Actualización de Lote">Actualización de Lote</option>
+                                <option value="Edición de Lote">Edición de Lote</option>
+                                <option value="Eliminación">Eliminación / Baja</option>
+                                <option value="Registro de Reingreso">Registro de Reingreso</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label small">Usuario Responsable</label>
+                            <select class="form-select form-select-sm" id="filtro-aud-usuario" onchange="filtrarAuditoria()">
+                                <option value="">Todos los usuarios</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-3 d-flex align-items-end">
+                            <button class="btn btn-outline-secondary btn-sm w-100" onclick="limpiarFiltrosAuditoria()">
+                                <i class="bi bi-x-circle me-1"></i> Limpiar Filtros
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="card p-3 p-md-4 border-0 shadow-sm">
                     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                         <h6 class="fw-bold m-0 text-dark">
@@ -1239,7 +1272,7 @@
 
         const PERMISOS = {
             reingresos_escritura: ["ALFREDO CRUZADO", "ACRUZADO", "ROBERTO DAVILA", "RDAVILA", "JORGE IZQUIERDO", "JIZQUIERDO", "MANUEL BARANDIARAN", "MBARANDIARAN"],
-            inventario_escritura: ["ALFREDO CRUZADO", "ACRUZADO", "ROBERTO DAVILA", "RDAVILA", "JORGE IZQUIERDO", "JIZQUIERDO", "MANUEL BARANDIARAN", "MBARANDIARAN", "TEFILO GABINO", "TGABINO"],
+            inventario_escritura: ["ALFREDO CRUZADO", "ACRUZADO", "ROBERTO DAVILA", "RDAVILA", "JORGE IZQUIERDO", "JIZQUIERDO", "MANUEL BARANDIARAN", "MBARANDIARAN", "TEOFILO GABINO", "TGABINO"],
             microformas_escritura: ["ALFREDO CRUZADO", "ACRUZADO"]
         };
 
@@ -1352,6 +1385,7 @@
         let listaFaltantesModal = []; 
         let baseDatosReingresos = [];
         let baseDatosMicroformas = [];
+        let listaLogsAuditoria = [];
         let idReingresoEnEdicion = null;
         let idMicroformaEnEdicion = null;
         let modalInstance = null;
@@ -1379,6 +1413,23 @@
             if (correoGuardado) {
                 const inputEmail = document.getElementById('login-email');
                 if (inputEmail) inputEmail.value = correoGuardado;
+            }
+
+            // Enlace seguro de eventos para botones de impresión
+            const btnPrintDash = document.getElementById('btn-imprimir-dashboard');
+            if (btnPrintDash) {
+                btnPrintDash.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.print();
+                });
+            }
+
+            const btnPrintMicro = document.getElementById('btn-imprimir-microformas');
+            if (btnPrintMicro) {
+                btnPrintMicro.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.print();
+                });
             }
         });
 
@@ -1463,6 +1514,7 @@
                     Swal.fire('Acceso Denegado', 'No cuenta con privilegios para ver el log de auditoría.', 'error');
                     return;
                 }
+                cargarHistorialAuditoriaGlobal();
             }
 
             if (viewId === 'view-microformas') {
@@ -2342,19 +2394,26 @@
                 if (!tbody) return;
                 tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">Cargando registros de auditoría...</td></tr>`;
 
-                let logs = [];
+                listaLogsAuditoria = [];
+                const selectUsuario = document.getElementById('filtro-aud-usuario');
+                const usuarioSeleccionadoPrevio = selectUsuario ? selectUsuario.value : '';
+                if(selectUsuario) selectUsuario.innerHTML = '<option value="">Todos los usuarios</option>';
+                const setUsuariosUnicos = new Set();
 
                 try {
                     const snapLogins = await getDocs(collection(db, "auditoria_logins"));
                     snapLogins.forEach(docSnap => {
                         const d = docSnap.data();
                         const timestamp = d.timestamp || 0;
-                        logs.push({
+                        const nombreUser = d.nombre || d.email || 'Desconocido';
+                        setUsuariosUnicos.add(nombreUser);
+                        listaLogsAuditoria.push({
+                            fechaISO: timestamp ? new Date(timestamp).toISOString().split('T')[0] : '',
                             fecha: timestamp ? new Date(timestamp).toLocaleString() : 'N/A',
                             timestamp: timestamp,
                             modulo: 'Seguridad / Sesiones',
                             accion: 'Inicio de Sesión',
-                            usuario: d.nombre || d.email || 'Desconocido',
+                            usuario: nombreUser,
                             detalle: `Acceso autorizado al sistema desde el correo: ${d.email || 'N/A'}`
                         });
                     });
@@ -2365,34 +2424,43 @@
                     snapCenso.forEach(docSnap => {
                         const d = docSnap.data();
                         const timestampCreacion = d.auditoria?.timestamp || d.createdAt || 0;
+                        const userCreacion = d.auditoria?.nombre || d.registra || 'Desconocido';
+                        setUsuariosUnicos.add(userCreacion);
                         
-                        logs.push({
+                        listaLogsAuditoria.push({
+                            fechaISO: timestampCreacion ? new Date(timestampCreacion).toISOString().split('T')[0] : '',
                             fecha: timestampCreacion ? new Date(timestampCreacion).toLocaleString() : 'N/A',
                             timestamp: timestampCreacion,
                             modulo: 'Inventario de Existencias',
                             accion: d.createdAt ? 'Creación de Lote' : 'Actualización de Lote',
-                            usuario: d.auditoria?.nombre || d.registra || 'Desconocido',
+                            usuario: userCreacion,
                             detalle: `Repositorio: ${d.repositorio} | Fecha ejecución: ${d.fecha} | Total Real: ${d.totalReal}`
                         });
 
                         if (d.auditoriaEdicion) {
-                            logs.push({
+                            const userEd = d.auditoriaEdicion.nombre || 'Desconocido';
+                            setUsuariosUnicos.add(userEd);
+                            listaLogsAuditoria.push({
+                                fechaISO: d.auditoriaEdicion.timestamp ? new Date(d.auditoriaEdicion.timestamp).toISOString().split('T')[0] : '',
                                 fecha: d.auditoriaEdicion.timestamp ? new Date(d.auditoriaEdicion.timestamp).toLocaleString() : 'N/A',
                                 timestamp: d.auditoriaEdicion.timestamp || 0,
                                 modulo: 'Inventario de Existencias',
                                 accion: 'Edición de Lote',
-                                usuario: d.auditoriaEdicion.nombre || 'Desconocido',
+                                usuario: userEd,
                                 detalle: `Se modificó el lote del repositorio: ${d.repositorio}`
                             });
                         }
 
                         if (d.activo === false && d.auditoriaEliminacion) {
-                            logs.push({
+                            const userDel = d.auditoriaEliminacion.nombre || 'Desconocido';
+                            setUsuariosUnicos.add(userDel);
+                            listaLogsAuditoria.push({
+                                fechaISO: d.auditoriaEliminacion.timestamp ? new Date(d.auditoriaEliminacion.timestamp).toISOString().split('T')[0] : '',
                                 fecha: d.auditoriaEliminacion.timestamp ? new Date(d.auditoriaEliminacion.timestamp).toLocaleString() : 'N/A',
                                 timestamp: d.auditoriaEliminacion.timestamp || 0,
                                 modulo: 'Inventario de Existencias',
-                                accion: 'Eliminación (Baja Lógica)',
-                                usuario: d.auditoriaEliminacion.nombre || 'Desconocido',
+                                accion: 'Eliminación',
+                                usuario: userDel,
                                 detalle: `Se dio de baja al lote del repositorio: ${d.repositorio}`
                             });
                         }
@@ -2404,34 +2472,43 @@
                     snapReingresos.forEach(docSnap => {
                         const d = docSnap.data();
                         const timestampReg = d.auditoria?.timestamp || d.createdAt || 0;
+                        const userReing = d.auditoria?.nombre || d.entregado || 'Desconocido';
+                        setUsuariosUnicos.add(userReing);
                         
-                        logs.push({
+                        listaLogsAuditoria.push({
+                            fechaISO: timestampReg ? new Date(timestampReg).toISOString().split('T')[0] : '',
                             fecha: timestampReg ? new Date(timestampReg).toLocaleString() : 'N/A',
                             timestamp: timestampReg,
                             modulo: 'Módulo Reingresos',
                             accion: 'Registro de Reingreso',
-                            usuario: d.auditoria?.nombre || d.entregado || 'Desconocido',
+                            usuario: userReing,
                             detalle: `Correlativo N° ${d.correlativo} | Local: ${d.local} | Solicitante: ${d.solicitante}`
                         });
 
                         if (d.auditoriaEdicion) {
-                            logs.push({
+                            const userEdRe = d.auditoriaEdicion.nombre || 'Desconocido';
+                            setUsuariosUnicos.add(userEdRe);
+                            listaLogsAuditoria.push({
+                                fechaISO: d.auditoriaEdicion.timestamp ? new Date(d.auditoriaEdicion.timestamp).toISOString().split('T')[0] : '',
                                 fecha: d.auditoriaEdicion.timestamp ? new Date(d.auditoriaEdicion.timestamp).toLocaleString() : 'N/A',
                                 timestamp: d.auditoriaEdicion.timestamp || 0,
                                 modulo: 'Módulo Reingresos',
-                                accion: 'Edición de Reingreso',
-                                usuario: d.auditoriaEdicion.nombre || 'Desconocido',
+                                accion: 'Edición de Lote',
+                                usuario: userEdRe,
                                 detalle: `Se modificó el reingreso N° ${d.correlativo} (${d.local})`
                             });
                         }
 
                         if (d.activo === false && d.auditoriaEliminacion) {
-                            logs.push({
+                            const userDelRe = d.auditoriaEliminacion.nombre || 'Desconocido';
+                            setUsuariosUnicos.add(userDelRe);
+                            listaLogsAuditoria.push({
+                                fechaISO: d.auditoriaEliminacion.timestamp ? new Date(d.auditoriaEliminacion.timestamp).toISOString().split('T')[0] : '',
                                 fecha: d.auditoriaEliminacion.timestamp ? new Date(d.auditoriaEliminacion.timestamp).toLocaleString() : 'N/A',
                                 timestamp: d.auditoriaEliminacion.timestamp || 0,
                                 modulo: 'Módulo Reingresos',
-                                accion: 'Eliminación (Baja Lógica)',
-                                usuario: d.auditoriaEliminacion.nombre || 'Desconocido',
+                                accion: 'Eliminación',
+                                usuario: userDelRe,
                                 detalle: `Se dio de baja al reingreso N° ${d.correlativo} (${d.local})`
                             });
                         }
@@ -2443,46 +2520,83 @@
                     snapMicro.forEach(docSnap => {
                         const d = docSnap.data();
                         const ts = d.timestamp || d.auditoriaCreacion?.timestamp || 0;
-                        logs.push({
+                        const userMicro = d.auditoriaEdicion?.nombre || d.auditoriaCreacion?.nombre || 'ALFREDO CRUZADO';
+                        setUsuariosUnicos.add(userMicro);
+                        listaLogsAuditoria.push({
+                            fechaISO: ts ? new Date(ts).toISOString().split('T')[0] : '',
                             fecha: ts ? new Date(ts).toLocaleString() : 'N/A',
                             timestamp: ts,
                             modulo: 'Control Microformas',
-                            accion: d.auditoriaEdicion ? 'Actualización de Bloque' : 'Creación de Bloque',
-                            usuario: d.auditoriaEdicion?.nombre || d.auditoriaCreacion?.nombre || 'ALFREDO CRUZADO',
+                            accion: d.auditoriaEdicion ? 'Actualización de Lote' : 'Creación de Lote',
+                            usuario: userMicro,
                             detalle: `Bloque N° ${d.bloque} | Rango: ${d.rango} | Juzgado: ${d.juzgado}`
                         });
                     });
                 } catch(err) { console.warn(err); }
 
-                logs.sort((a, b) => b.timestamp - a.timestamp);
-
-                tbody.innerHTML = '';
-                if (logs.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">No hay registros de auditoría disponibles.</td></tr>`;
-                    return;
+                if(selectUsuario) {
+                    setUsuariosUnicos.forEach(u => {
+                        selectUsuario.innerHTML += `<option value="${u}">${u}</option>`;
+                    });
+                    selectUsuario.value = usuarioSeleccionadoPrevio;
                 }
 
-                logs.forEach(l => {
-                    let badgeColor = 'bg-success';
-                    if (l.accion.includes('Eliminación')) badgeColor = 'bg-danger';
-                    if (l.accion.includes('Actualización') || l.accion.includes('Edición')) badgeColor = 'bg-warning text-dark';
-                    if (l.accion.includes('Inicio de Sesión')) badgeColor = 'bg-info text-dark';
-
-                    const tr = `<tr>
-                        <td><small>${l.fecha}</small></td>
-                        <td><span class="badge bg-secondary">${l.modulo}</span></td>
-                        <td><span class="badge ${badgeColor}">${l.accion}</span></td>
-                        <td class="fw-bold text-dark">${l.usuario}</td>
-                        <td><small class="text-muted">${l.detalle}</small></td>
-                    </tr>`;
-                    tbody.insertAdjacentHTML('beforeend', tr);
-                });
+                listaLogsAuditoria.sort((a, b) => b.timestamp - a.timestamp);
+                filtrarAuditoria();
 
             } catch (error) {
                 console.error(error);
                 document.getElementById('tabla-auditoria-global').innerHTML = `<tr><td colspan="5" class="text-center text-danger py-3">Error al cargar el historial de cambios.</td></tr>`;
             }
         };
+
+        window.filtrarAuditoria = function() {
+            const fFecha = document.getElementById('filtro-aud-fecha')?.value || '';
+            const fAccion = document.getElementById('filtro-aud-accion')?.value || '';
+            const fUsuario = document.getElementById('filtro-aud-usuario')?.value || '';
+
+            const logsFiltrados = listaLogsAuditoria.filter(l => {
+                const matchFecha = fFecha === '' || l.fechaISO === fFecha;
+                const matchAccion = fAccion === '' || l.accion.includes(fAccion);
+                const matchUsuario = fUsuario === '' || l.usuario === fUsuario;
+                return matchFecha && matchAccion && matchUsuario;
+            });
+
+            renderTablaAuditoria(logsFiltrados);
+        };
+
+        window.limpiarFiltrosAuditoria = function() {
+            document.getElementById('filtro-aud-fecha').value = '';
+            document.getElementById('filtro-aud-accion').value = '';
+            document.getElementById('filtro-aud-usuario').value = '';
+            filtrarAuditoria();
+        };
+
+        function renderTablaAuditoria(logs) {
+            const tbody = document.getElementById('tabla-auditoria-global');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            if (logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">No hay registros de auditoría que coincidan con los filtros.</td></tr>`;
+                return;
+            }
+
+            logs.forEach(l => {
+                let badgeColor = 'bg-success';
+                if (l.accion.includes('Eliminación')) badgeColor = 'bg-danger';
+                if (l.accion.includes('Actualización') || l.accion.includes('Edición')) badgeColor = 'bg-warning text-dark';
+                if (l.accion.includes('Inicio de Sesión')) badgeColor = 'bg-info text-dark';
+
+                const tr = `<tr>
+                    <td><small>${l.fecha}</small></td>
+                    <td><span class="badge bg-secondary">${l.modulo}</span></td>
+                    <td><span class="badge ${badgeColor}">${l.accion}</span></td>
+                    <td class="fw-bold text-dark">${l.usuario}</td>
+                    <td><small class="text-muted">${l.detalle}</small></td>
+                </tr>`;
+                tbody.insertAdjacentHTML('beforeend', tr);
+            });
+        }
 
         window.imprimirReporteAuditoria = function() {
             const contenido = document.getElementById('tabla-auditoria-container');
