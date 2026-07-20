@@ -1692,7 +1692,7 @@
             switchView('view-inventario', 'Carga de Inventario de Existencias');
         };
 
-        window.cargarHistorialAuditoriaGlobal = async function() {
+window.cargarHistorialAuditoriaGlobal = async function() {
             try {
                 const tbody = document.getElementById('tabla-auditoria-global');
                 if (!tbody) return;
@@ -1701,89 +1701,90 @@
                 let logs = [];
 
                 // 1. Auditoría de Inicios de Sesión
-                const snapLogins = await getDocs(collection(db, "auditoria_logins"));
-                snapLogins.forEach(docSnap => {
-                    const d = docSnap.data();
-                    const fechaLogin = d.timestamp ? new Date(d.timestamp).toLocaleString() : 'N/A';
-                    logs.push({
-                        fecha: fechaLogin,
-                        timestamp: d.timestamp || 0,
-                        modulo: 'Seguridad / Sesiones',
-                        accion: 'Inicio de Sesión',
-                        usuario: d.nombre || d.email || 'Desconocido',
-                        detalle: `Acceso autorizado al sistema desde el correo: ${d.email || 'N/A'}`
+                try {
+                    const snapLogins = await getDocs(collection(db, "auditoria_logins"));
+                    snapLogins.forEach(docSnap => {
+                        const d = docSnap.data();
+                        const timestamp = d.timestamp || 0;
+                        logs.push({
+                            fecha: timestamp ? new Date(timestamp).toLocaleString() : 'N/A',
+                            timestamp: timestamp,
+                            modulo: 'Seguridad / Sesiones',
+                            accion: 'Inicio de Sesión',
+                            usuario: d.nombre || d.email || 'Desconocido',
+                            detalle: `Acceso autorizado al sistema desde el correo: ${d.email || 'N/A'}`
+                        });
                     });
-                });
+                } catch(err) { console.warn("No se pudo cargar auditoria_logins:", err); }
 
                 // 2. Auditoría de Inventario (Creaciones, Ediciones y Bajas)
-                const snapCenso = await getDocs(collection(db, "censo_institucional"));
-                snapCenso.forEach(docSnap => {
-                    const d = docSnap.data();
-                    const timestampCreacion = d.auditoria?.timestamp || d.createdAt || 0;
-                    const fechaCreacion = timestampCreacion ? new Date(timestampCreacion).toLocaleString() : 'N/A';
-                    
-                    logs.push({
-                        fecha: fechaCreacion,
-                        timestamp: timestampCreacion,
-                        modulo: 'Inventario de Existencias',
-                        accion: d.createdAt ? 'Creación de Lote' : 'Actualización de Lote',
-                        usuario: d.auditoria?.nombre || d.registra || 'Desconocido',
-                        detalle: `Repositorio: ${d.repositorio} | Fecha ejecución: ${d.fecha} | Total Real: ${d.totalReal}`
+                try {
+                    const snapCenso = await getDocs(collection(db, "censo_institucional"));
+                    snapCenso.forEach(docSnap => {
+                        const d = docSnap.data();
+                        const timestampCreacion = d.auditoria?.timestamp || d.createdAt || 0;
+                        
+                        logs.push({
+                            fecha: timestampCreacion ? new Date(timestampCreacion).toLocaleString() : 'N/A',
+                            timestamp: timestampCreacion,
+                            modulo: 'Inventario de Existencias',
+                            accion: d.createdAt ? 'Creación de Lote' : 'Actualización de Lote',
+                            usuario: d.auditoria?.nombre || d.registra || 'Desconocido',
+                            detalle: `Repositorio: ${d.repositorio} | Fecha ejecución: ${d.fecha} | Total Real: ${d.totalReal}`
+                        });
+
+                        if (d.auditoriaEdicion) {
+                            logs.push({
+                                fecha: d.auditoriaEdicion.timestamp ? new Date(d.auditoriaEdicion.timestamp).toLocaleString() : 'N/A',
+                                timestamp: d.auditoriaEdicion.timestamp || 0,
+                                modulo: 'Inventario de Existencias',
+                                accion: 'Edición de Lote',
+                                usuario: d.auditoriaEdicion.nombre || 'Desconocido',
+                                detalle: `Se modificó el lote del repositorio: ${d.repositorio}`
+                            });
+                        }
+
+                        if (d.activo === false && d.auditoriaEliminacion) {
+                            logs.push({
+                                fecha: d.auditoriaEliminacion.timestamp ? new Date(d.auditoriaEliminacion.timestamp).toLocaleString() : 'N/A',
+                                timestamp: d.auditoriaEliminacion.timestamp || 0,
+                                modulo: 'Inventario de Existencias',
+                                accion: 'Eliminación (Baja Lógica)',
+                                usuario: d.auditoriaEliminacion.nombre || 'Desconocido',
+                                detalle: `Se dio de baja al lote del repositorio: ${d.repositorio}`
+                            });
+                        }
                     });
-
-                    if (d.auditoriaEdicion) {
-                        const fechaEdicion = new Date(d.auditoriaEdicion.timestamp).toLocaleString();
-                        logs.push({
-                            fecha: fechaEdicion,
-                            timestamp: d.auditoriaEdicion.timestamp,
-                            modulo: 'Inventario de Existencias',
-                            accion: 'Edición de Lote',
-                            usuario: d.auditoriaEdicion.nombre || 'Desconocido',
-                            detalle: `Se modificó el lote del repositorio: ${d.repositorio}`
-                        });
-                    }
-
-                    if (d.activo === false && d.auditoriaEliminacion) {
-                        const fechaEliminacion = d.auditoriaEliminacion.timestamp ? new Date(d.auditoriaEliminacion.timestamp).toLocaleString() : 'N/A';
-                        logs.push({
-                            fecha: fechaEliminacion,
-                            timestamp: d.auditoriaEliminacion.timestamp || 0,
-                            modulo: 'Inventario de Existencias',
-                            accion: 'Eliminación (Baja Lógica)',
-                            usuario: d.auditoriaEliminacion.nombre || 'Desconocido',
-                            detalle: `Se dio de baja al lote del repositorio: ${d.repositorio}`
-                        });
-                    }
-                });
+                } catch(err) { console.warn("No se pudo cargar censo_institucional:", err); }
 
                 // 3. Auditoría de Reingresos (Creaciones y Bajas)
-                const snapReingresos = await getDocs(collection(db, "reingresos"));
-                snapReingresos.forEach(docSnap => {
-                    const d = docSnap.data();
-                    const timestampReg = d.auditoria?.timestamp || d.createdAt || 0;
-                    const fechaCreacion = timestampReg ? new Date(timestampReg).toLocaleString() : 'N/A';
-                    
-                    logs.push({
-                        fecha: fechaCreacion,
-                        timestamp: timestampReg,
-                        modulo: 'Módulo Reingresos',
-                        accion: 'Registro de Reingreso',
-                        usuario: d.auditoria?.nombre || d.entregado || 'Desconocido',
-                        detalle: `Correlativo N° ${d.correlativo} | Local: ${d.local} | Solicitante: ${d.solicitante}`
-                    });
-
-                    if (d.activo === false && d.auditoriaEliminacion) {
-                        const fechaEliminacion = d.auditoriaEliminacion.timestamp ? new Date(d.auditoriaEliminacion.timestamp).toLocaleString() : 'N/A';
+                try {
+                    const snapReingresos = await getDocs(collection(db, "reingresos"));
+                    snapReingresos.forEach(docSnap => {
+                        const d = docSnap.data();
+                        const timestampReg = d.auditoria?.timestamp || d.createdAt || 0;
+                        
                         logs.push({
-                            fecha: fechaEliminacion,
-                            timestamp: d.auditoriaEliminacion.timestamp || 0,
+                            fecha: timestampReg ? new Date(timestampReg).toLocaleString() : 'N/A',
+                            timestamp: timestampReg,
                             modulo: 'Módulo Reingresos',
-                            accion: 'Eliminación (Baja Lógica)',
-                            usuario: d.auditoriaEliminacion.nombre || 'Desconocido',
-                            detalle: `Se dio de baja al reingreso N° ${d.correlativo} (${d.local})`
+                            accion: 'Registro de Reingreso',
+                            usuario: d.auditoria?.nombre || d.entregado || 'Desconocido',
+                            detalle: `Correlativo N° ${d.correlativo} | Local: ${d.local} | Solicitante: ${d.solicitante}`
                         });
-                    }
-                });
+
+                        if (d.activo === false && d.auditoriaEliminacion) {
+                            logs.push({
+                                fecha: d.auditoriaEliminacion.timestamp ? new Date(d.auditoriaEliminacion.timestamp).toLocaleString() : 'N/A',
+                                timestamp: d.auditoriaEliminacion.timestamp || 0,
+                                modulo: 'Módulo Reingresos',
+                                accion: 'Eliminación (Baja Lógica)',
+                                usuario: d.auditoriaEliminacion.nombre || 'Desconocido',
+                                detalle: `Se dio de baja al reingreso N° ${d.correlativo} (${d.local})`
+                            });
+                        }
+                    });
+                } catch(err) { console.warn("No se pudo cargar reingresos:", err); }
 
                 logs.sort((a, b) => b.timestamp - a.timestamp);
 
