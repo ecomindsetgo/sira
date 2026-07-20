@@ -229,6 +229,12 @@
                 </a>
             </nav>
 
+
+<a class="nav-link" href="#" onclick="switchView('view-auditoria', 'Historial y Trazabilidad del Sistema')">
+    <i class="bi bi-clock-history"></i> Auditoría de Cambios
+</a>
+
+
             <div class="p-3 border-top border-secondary border-opacity-25">
                 <button id="btn-logout" class="btn btn-outline-danger w-100 btn-sm d-flex align-items-center justify-content-center gap-2">
     <i class="bi bi-box-arrow-left"></i> Cerrar Sesión
@@ -315,7 +321,6 @@
         </div>
     </div>
 </section>
-
 
 
             <!-- DASHBOARD GLOBAL -->
@@ -682,6 +687,39 @@
                     <p class="text-muted small">Los parámetros de repositorios, personal y roles del Archivo Desconcentrado de la CSJSA están centralizados en esta versión base.</p>
                 </div>
             </section>
+
+
+
+<!-- AUDITORÍA GENERAL DE CAMBIOS -->
+<section id="view-auditoria" class="view-section">
+    <div class="card p-4 border-0 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold m-0 text-dark">
+                <i class="bi bi-shield-check me-2"></i>Log de Trazabilidad (Creaciones, Ediciones y Bajas)
+            </h6>
+            <button class="btn btn-primary btn-sm" onclick="cargarHistorialAuditoriaGlobal()">
+                <i class="bi bi-arrow-clockwise"></i> Actualizar Log
+            </button>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle border" style="font-size: 0.85rem;">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Fecha / Hora</th>
+                        <th>Módulo</th>
+                        <th>Acción / Estado</th>
+                        <th>Usuario Responsable</th>
+                        <th>Detalles del Registro</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-auditoria-global">
+                    <!-- Los datos se cargarán dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
 
 
 
@@ -1593,6 +1631,108 @@ function actualizarDashboardGlobal() {
             calcularConsolidadoGlobal();
             switchView('view-inventario', 'Carga de Inventario de Existencias');
         };
+
+
+
+
+window.cargarHistorialAuditoriaGlobal = async function() {
+            try {
+                const tbody = document.getElementById('tabla-auditoria-global');
+                if (!tbody) return;
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">Cargando registros de auditoría...</td></tr>`;
+
+                let logs = [];
+
+                // 1. Obtener logs de Inventarios / Censo
+                const snapCenso = await getDocs(collection(db, "censo_institucional"));
+                snapCenso.forEach(docSnap => {
+                    const d = docSnap.data();
+                    const fechaCreacion = d.auditoria?.timestamp ? new Date(d.auditoria.timestamp).toLocaleString() : 'N/A';
+                    
+                    // Registro de Creación/Edición
+                    logs.push({
+                        fecha: fechaCreacion,
+                        timestamp: d.auditoria?.timestamp || 0,
+                        modulo: 'Inventario de Existencias',
+                        accion: d.createdAt ? 'Creación de Lote' : 'Actualización de Lote',
+                        usuario: d.auditoria?.name || d.registra || 'Desconocido',
+                        detalle: `Repositorio: ${d.repositorio} | Fecha ejecución: ${d.fecha} | Total Real: ${d.totalReal}`
+                    });
+
+                    // Si fue eliminado (borrado lógico)
+                    if (d.activo === false && d.auditoriaEliminacion) {
+                        const fechaEliminacion = d.auditoriaEliminacion.timestamp ? new Date(d.auditoriaEliminacion.timestamp).toLocaleString() : 'N/A';
+                        logs.push({
+                            fecha: fechaEliminacion,
+                            timestamp: d.auditoriaEliminacion.timestamp || 0,
+                            modulo: 'Inventario de Existencias',
+                            accion: 'Eliminación (Baja Lógica)',
+                            usuario: d.auditoriaEliminacion.nombre || 'Desconocido',
+                            detalle: `Se dio de baja al lote del repositorio: ${d.repositorio}`
+                        });
+                    }
+                });
+
+                // 2. Obtener logs de Reingresos
+                const snapReingresos = await getDocs(collection(db, "reingresos"));
+                snapReingresos.forEach(docSnap => {
+                    const d = docSnap.data();
+                    const fechaCreacion = d.auditoria?.timestamp ? new Date(d.auditoria.timestamp).toLocaleString() : (d.createdAt ? new Date(d.createdAt).toLocaleString() : 'N/A');
+                    
+                    logs.push({
+                        fecha: fechaCreacion,
+                        timestamp: d.auditoria?.timestamp || d.createdAt || 0,
+                        modulo: 'Módulo Reingresos',
+                        accion: 'Registro de Reingreso',
+                        usuario: d.auditoria?.nombre || d.entregado || 'Desconocido',
+                        detalle: `Correlativo N° ${d.correlativo} | Local: ${d.local} | Solicitante: ${d.solicitante}`
+                    });
+
+                    if (d.activo === false && d.auditoriaEliminacion) {
+                        const fechaEliminacion = d.auditoriaEliminacion.timestamp ? new Date(d.auditoriaEliminacion.timestamp).toLocaleString() : 'N/A';
+                        logs.push({
+                            fecha: fechaEliminacion,
+                            timestamp: d.auditoriaEliminacion.timestamp || 0,
+                            modulo: 'Módulo Reingresos',
+                            accion: 'Eliminación (Baja Lógica)',
+                            usuario: d.auditoriaEliminacion.nombre || 'Desconocido',
+                            detalle: `Se dio de baja al reingreso N° ${d.correlativo} (${d.local})`
+                        });
+                    }
+                });
+
+                // Ordenar del más reciente al más antiguo
+                logs.sort((a, b) => b.timestamp - a.timestamp);
+
+                tbody.innerHTML = '';
+                if (logs.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">No hay registros de auditoría disponibles.</td></tr>`;
+                    return;
+                }
+
+                logs.forEach(l => {
+                    let badgeColor = 'bg-success';
+                    if (l.accion.includes('Eliminación')) badgeColor = 'bg-danger';
+                    if (l.accion.includes('Actualización')) badgeColor = 'bg-warning text-dark';
+
+                    const tr = `<tr>
+                        <td><small>${l.fecha}</small></td>
+                        <td><span class="badge bg-secondary">${l.modulo}</span></td>
+                        <td><span class="badge ${badgeColor}">${l.accion}</span></td>
+                        <td class="fw-bold text-dark">${l.usuario}</td>
+                        <td><small class="text-muted">${l.detalle}</small></td>
+                    </tr>`;
+                    tbody.insertAdjacentHTML('beforeend', tr);
+                });
+
+            } catch (error) {
+                console.error("Error al cargar auditoría:", error);
+                document.getElementById('tabla-auditoria-global').innerHTML = `<tr><td colspan="5" class="text-center text-danger py-3">Error al cargar el historial de cambios.</td></tr>`;
+            }
+        };
+
+
+
 
         // Función auxiliar para mostrar el PDF en el modal de vista previa
         function mostrarModalPreviewPDF(url, nombreArchivo) {
