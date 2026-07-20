@@ -970,6 +970,9 @@ function resetFormularioReingreso() {
         
         // Carga de inventarios
         await cargarInventariosDesdeCloud().catch(err => console.error("Error al cargar inventarios:", err));
+
+        // Carga de reingresos para el dashboard (antes nunca se llamaba)
+        await cargarHistorialReingresosParaDashboard().catch(err => console.error("Error al cargar reingresos:", err));
     } else {
         document.getElementById('app-container').style.display = 'none';
         document.getElementById('login-container').style.display = 'flex';
