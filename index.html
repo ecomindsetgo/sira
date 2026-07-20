@@ -1263,10 +1263,26 @@
                     ctx.drawImage(img, 0, 0);
                     resolve(canvas.toDataURL('image/png'));
                 };
-                img.onerror = function() {
-                    resolve(null);
-                };
+                img.onerror = function() { resolve(null); };
                 img.src = 'https://ecomindsetgo.github.io/saamir/LOGO%20ARCHIVO.png';
+            });
+        }
+
+        // Función auxiliar para obtener el logo de Microformas (LPMD) en Base64 para jsPDF de Microformas
+        function obtenerLogoLPMDBase64() {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.crossOrigin = 'Anonymous';
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    resolve(canvas.toDataURL('image/png'));
+                };
+                img.onerror = function() { resolve(null); };
+                img.src = 'https://ecomindsetgo.github.io/saamir/LOGO%20LPMD.png';
             });
         }
 
@@ -1473,9 +1489,14 @@
 
         // ==================== LÓGICA DE MICROFORMAS ====================
         window.calcularCantidadPaquetesMicroforma = function() {
-            const desde = parseInt(document.getElementById('mf-paquete-desde').value, 10);
-            const hasta = parseInt(document.getElementById('mf-paquete-hasta').value, 10);
+            const desdeInput = document.getElementById('mf-paquete-desde');
+            const hastaInput = document.getElementById('mf-paquete-hasta');
             const inputCant = document.getElementById('mf-cant-paquetes');
+            
+            if (!desdeInput || !hastaInput || !inputCant) return;
+
+            const desde = parseInt(desdeInput.value, 10);
+            const hasta = parseInt(hastaInput.value, 10);
 
             if (!isNaN(desde) && !isNaN(hasta) && hasta >= desde) {
                 const total = (hasta - desde) + 1;
@@ -1488,6 +1509,7 @@
         window.abrirModalMicroforma = function(id = null) {
             idMicroformaEnEdicion = id;
             document.getElementById('form-modal-microforma').reset();
+            document.getElementById('mf-cant-paquetes').value = '';
             
             if (id !== null) {
                 const item = baseDatosMicroformas.find(m => m.id === id);
@@ -1541,14 +1563,22 @@
 
             const pDesde = document.getElementById('mf-paquete-desde').value.trim();
             const pHasta = document.getElementById('mf-paquete-hasta').value.trim();
+            const bloqueNum = parseInt(document.getElementById('mf-bloque').value, 10);
+            const cantPaq = parseInt(document.getElementById('mf-cant-paquetes').value, 10);
+
+            if (!bloqueNum || !pDesde || !pHasta || isNaN(cantPaq)) {
+                Swal.fire('Campos incompletos', 'Por favor complete el N° de Bloque y asegúrese de que el rango de paquetes esté calculado correctamente.', 'warning');
+                return;
+            }
+
             const rangoCompleto = `${pDesde} al ${pHasta}`;
 
             const bloqueData = {
-                bloque: parseInt(document.getElementById('mf-bloque').value, 10) || 0,
+                bloque: bloqueNum,
                 paqueteDesde: pDesde,
                 paqueteHasta: pHasta,
                 rango: rangoCompleto,
-                cantPaquetes: parseInt(document.getElementById('mf-cant-paquetes').value, 10) || 0,
+                cantPaquetes: cantPaq,
                 juzgado: document.getElementById('mf-juzgado').value.trim().toUpperCase(),
                 folios: parseInt(document.getElementById('mf-folios').value, 10) || 0,
                 imagenes: parseInt(document.getElementById('mf-imagenes').value, 10) || 0,
