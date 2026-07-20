@@ -1510,253 +1510,274 @@
         });
 
         // ==================== LÓGICA DE MICROFORMAS ====================
-        window.calcularCantidadPaquetesMicroforma = function() {
-            const desdeInput = document.getElementById('mf-paquete-desde');
-            const hastaInput = document.getElementById('mf-paquete-hasta');
-            const inputCant = document.getElementById('mf-cant-paquetes');
-            
-            if (!desdeInput || !hastaInput || !inputCant) return;
+function puedeEditarMicroformas(nombreUsuario) {
+    const u = normalizarTexto(nombreUsuario);
+    return PERMISOS.microformas_escritura.map(n => normalizarTexto(n)).includes(u);
+}
 
-            const desde = parseInt(desdeInput.value, 10);
-            const hasta = parseInt(hastaInput.value, 10);
+window.calcularCantidadPaquetesMicroforma = function() {
+    const desdeInput = document.getElementById('mf-paquete-desde');
+    const hastaInput = document.getElementById('mf-paquete-hasta');
+    const inputCant = document.getElementById('mf-cant-paquetes');
 
-            if (!isNaN(desde) && !isNaN(hasta) && hasta >= desde) {
-                const total = (hasta - desde) + 1;
-                inputCant.value = total;
-            } else {
-                inputCant.value = '';
-            }
-        };
+    if (!desdeInput || !hastaInput || !inputCant) return;
 
-        window.abrirModalMicroforma = function(id = null) {
-            idMicroformaEnEdicion = id;
-            document.getElementById('form-modal-microforma').reset();
-            document.getElementById('mf-cant-paquetes').value = '';
-            
-            if (id !== null) {
-                const item = baseDatosMicroformas.find(m => m.id === id);
-                if (item) {
-                    document.getElementById('mf-bloque').value = item.bloque || '';
-                    
-                    if (item.paqueteDesde && item.paqueteHasta) {
-                        document.getElementById('mf-paquete-desde').value = item.paqueteDesde;
-                        document.getElementById('mf-paquete-hasta').value = item.paqueteHasta;
-                    } else if (item.rango && item.rango.includes(' al ')) {
-                        const partes = item.rango.split(' al ');
-                        document.getElementById('mf-paquete-desde').value = partes[0].trim();
-                        document.getElementById('mf-paquete-hasta').value = partes[1].trim();
-                    }
+    const desde = parseInt(desdeInput.value, 10);
+    const hasta = parseInt(hastaInput.value, 10);
 
-                    document.getElementById('mf-cant-paquetes').value = item.cantPaquetes || '';
-                    document.getElementById('mf-juzgado').value = item.juzgado || '';
-                    document.getElementById('mf-folios').value = item.folios || '';
-                    document.getElementById('mf-imagenes').value = item.imagenes || '';
-                    document.getElementById('mf-registros').value = item.registros || '';
-                    document.getElementById('mf-expedientes').value = item.expedientes || '';
-                    document.getElementById('mf-mes').value = item.mes || '';
-                    document.getElementById('mf-fec-inicio').value = item.fecInicio || '';
-                    document.getElementById('mf-fec-fin').value = item.fecFin || '';
-                    document.getElementById('mf-fec-grabacion').value = item.fecGrabacion || '';
-                    document.getElementById('modal-microforma-titulo').innerHTML = '<i class="bi bi-pencil-square me-2"></i>Editar Bloque de Microformas';
-                    document.getElementById('btn-guardar-microforma').innerText = 'Guardar Cambios';
-                }
-            } else {
-                document.getElementById('modal-microforma-titulo').innerHTML = '<i class="bi bi-file-earmark-plus me-2"></i>Registrar Bloque de Microformas';
-                document.getElementById('btn-guardar-microforma').innerText = 'Guardar Bloque';
+    if (!isNaN(desde) && !isNaN(hasta) && hasta >= desde) {
+        const total = (hasta - desde) + 1;
+        inputCant.value = total;
+    } else {
+        inputCant.value = '';
+    }
+};
+
+window.abrirModalMicroforma = function(id = null) {
+    idMicroformaEnEdicion = id;
+    document.getElementById('form-modal-microforma').reset();
+    document.getElementById('mf-cant-paquetes').value = '';
+
+    if (id !== null) {
+        const item = baseDatosMicroformas.find(m => m.id === id);
+        if (item) {
+            document.getElementById('mf-bloque').value = item.bloque || '';
+
+            if (item.paqueteDesde && item.paqueteHasta) {
+                document.getElementById('mf-paquete-desde').value = item.paqueteDesde;
+                document.getElementById('mf-paquete-hasta').value = item.paqueteHasta;
+            } else if (item.rango && item.rango.includes(' al ')) {
+                const partes = item.rango.split(' al ');
+                document.getElementById('mf-paquete-desde').value = partes[0].trim();
+                document.getElementById('mf-paquete-hasta').value = partes[1].trim();
             }
 
-            modalMicroformaInstance = new bootstrap.Modal(document.getElementById('modalMicroforma'));
-            modalMicroformaInstance.show();
-        };
+            document.getElementById('mf-cant-paquetes').value = item.cantPaquetes || '';
+            document.getElementById('mf-juzgado').value = item.juzgado || '';
+            document.getElementById('mf-folios').value = item.folios || '';
+            document.getElementById('mf-imagenes').value = item.imagenes || '';
+            document.getElementById('mf-registros').value = item.registros || '';
+            document.getElementById('mf-expedientes').value = item.expedientes || '';
+            document.getElementById('mf-mes').value = item.mes || '';
+            document.getElementById('mf-fec-inicio').value = item.fecInicio || '';
+            document.getElementById('mf-fec-fin').value = item.fecFin || '';
+            document.getElementById('mf-fec-grabacion').value = item.fecGrabacion || '';
+            document.getElementById('modal-microforma-titulo').innerHTML = '<i class="bi bi-pencil-square me-2"></i>Editar Bloque de Microformas';
+            document.getElementById('btn-guardar-microforma').innerText = 'Guardar Cambios';
+        }
+    } else {
+        document.getElementById('modal-microforma-titulo').innerHTML = '<i class="bi bi-file-earmark-plus me-2"></i>Registrar Bloque de Microformas';
+        document.getElementById('btn-guardar-microforma').innerText = 'Guardar Bloque';
+    }
 
-        window.cerrarModalMicroforma = function() {
-            idMicroformaEnEdicion = null;
-            if (modalMicroformaInstance) modalMicroformaInstance.hide();
-        };
+    modalMicroformaInstance = new bootstrap.Modal(document.getElementById('modalMicroforma'));
+    modalMicroformaInstance.show();
+};
 
-        window.guardarMicroforma = async function() {
-            const currentUserObj = auth.currentUser;
-            const currentUserName = currentUserObj ? (currentUserObj.displayName ? normalizarTexto(currentUserObj.displayName) : normalizarTexto(currentUserObj.email.split('@')[0])) : 'DESCONOCIDO';
+window.cerrarModalMicroforma = function() {
+    idMicroformaEnEdicion = null;
+    if (modalMicroformaInstance) modalMicroformaInstance.hide();
+};
 
-            if (!esUsuarioAdministradorLog(currentUserName)) {
-                Swal.fire('Acceso denegado', 'Solo Alfredo Cruzado puede registrar o modificar bloques de microformas.', 'error');
-                return;
-            }
+window.guardarMicroforma = async function() {
+    const currentUserObj = auth.currentUser;
+    const currentUserName = currentUserObj ? (currentUserObj.displayName ? normalizarTexto(currentUserObj.displayName) : normalizarTexto(currentUserObj.email.split('@')[0])) : 'DESCONOCIDO';
 
-            const pDesde = document.getElementById('mf-paquete-desde').value.trim();
-            const pHasta = document.getElementById('mf-paquete-hasta').value.trim();
-            const bloqueNum = parseInt(document.getElementById('mf-bloque').value, 10);
-            const cantPaq = parseInt(document.getElementById('mf-cant-paquetes').value, 10);
+    if (!puedeEditarMicroformas(currentUserName)) {
+        Swal.fire('Acceso denegado', 'No cuenta con autorización para registrar o modificar bloques de microformas.', 'error');
+        return;
+    }
 
-            if (!bloqueNum || !pDesde || !pHasta || isNaN(cantPaq)) {
-                Swal.fire('Campos incompletos', 'Por favor complete el N° de Bloque y asegúrese de que el rango de paquetes esté calculado correctamente.', 'warning');
-                return;
-            }
+    const pDesde = document.getElementById('mf-paquete-desde').value.trim();
+    const pHasta = document.getElementById('mf-paquete-hasta').value.trim();
+    const bloqueNum = parseInt(document.getElementById('mf-bloque').value, 10);
+    const cantPaq = parseInt(document.getElementById('mf-cant-paquetes').value, 10);
 
-            const rangoCompleto = `${pDesde} al ${pHasta}`;
+    if (!bloqueNum || !pDesde || !pHasta || isNaN(cantPaq)) {
+        Swal.fire('Campos incompletos', 'Por favor complete el N° de Bloque y asegúrese de que el rango de paquetes esté calculado correctamente.', 'warning');
+        return;
+    }
 
-            const bloqueData = {
-                bloque: bloqueNum,
-                paqueteDesde: pDesde,
-                paqueteHasta: pHasta,
-                rango: rangoCompleto,
-                cantPaquetes: cantPaq,
-                juzgado: document.getElementById('mf-juzgado').value.trim().toUpperCase(),
-                folios: parseInt(document.getElementById('mf-folios').value, 10) || 0,
-                imagenes: parseInt(document.getElementById('mf-imagenes').value, 10) || 0,
-                registros: parseInt(document.getElementById('mf-registros').value, 10) || 0,
-                expedientes: parseInt(document.getElementById('mf-expedientes').value, 10) || 0,
-                mes: document.getElementById('mf-mes').value.trim().toUpperCase(),
-                fecInicio: document.getElementById('mf-fec-inicio').value,
-                fecFin: document.getElementById('mf-fec-fin').value,
-                fecGrabacion: document.getElementById('mf-fec-grabacion').value,
-                timestamp: Date.now()
-            };
+    const rangoCompleto = `${pDesde} al ${pHasta}`;
 
-            try {
-                if (idMicroformaEnEdicion) {
-                    bloqueData.auditoriaEdicion = { nombre: currentUserName, timestamp: Date.now() };
-                    await updateDoc(doc(db, "control_microformas", idMicroformaEnEdicion), bloqueData);
-                    Swal.fire({ icon: 'success', title: 'Bloque Actualizado', text: 'Los cambios se guardaron correctamente.' });
-                } else {
-                    bloqueData.activo = true;
-                    bloqueData.auditoriaCreacion = { nombre: currentUserName, timestamp: Date.now() };
-                    await addDoc(collection(db, "control_microformas"), bloqueData);
-                    Swal.fire({ icon: 'success', title: 'Bloque Registrado', text: 'El bloque de microformas se añadió con éxito.' });
-                }
+    const bloqueData = {
+        bloque: bloqueNum,
+        paqueteDesde: pDesde,
+        paqueteHasta: pHasta,
+        rango: rangoCompleto,
+        cantPaquetes: cantPaq,
+        juzgado: document.getElementById('mf-juzgado').value.trim().toUpperCase(),
+        folios: parseInt(document.getElementById('mf-folios').value, 10) || 0,
+        imagenes: parseInt(document.getElementById('mf-imagenes').value, 10) || 0,
+        registros: parseInt(document.getElementById('mf-registros').value, 10) || 0,
+        expedientes: parseInt(document.getElementById('mf-expedientes').value, 10) || 0,
+        mes: document.getElementById('mf-mes').value.trim().toUpperCase(),
+        fecInicio: document.getElementById('mf-fec-inicio').value,
+        fecFin: document.getElementById('mf-fec-fin').value,
+        fecGrabacion: document.getElementById('mf-fec-grabacion').value,
+        timestamp: Date.now()
+    };
 
-                cerrarModalMicroforma();
-                await cargarMicroformasDesdeCloud();
-            } catch (e) {
-                Swal.fire('Error', e.message, 'error');
-            }
-        };
-
-        async function cargarMicroformasDesdeCloud() {
-            try {
-                const querySnapshot = await getDocs(collection(db, "control_microformas"));
-                baseDatosMicroformas = [];
-                querySnapshot.forEach((docSnap) => {
-                    const data = { id: docSnap.id, ...docSnap.data() };
-                    if (data.activo !== false) baseDatosMicroformas.push(data);
-                });
-
-                baseDatosMicroformas.sort((a, b) => (a.bloque || 0) - (b.bloque || 0));
-                renderTablaMicroformas();
-                actualizarDashboardGlobal();
-            } catch (e) {
-                console.error("Error al cargar microformas:", e);
-            }
+    try {
+        if (idMicroformaEnEdicion) {
+            bloqueData.auditoriaEdicion = { nombre: currentUserName, timestamp: Date.now() };
+            await updateDoc(doc(db, "control_microformas", idMicroformaEnEdicion), bloqueData);
+            Swal.fire({ icon: 'success', title: 'Bloque Actualizado', text: 'Los cambios se guardaron correctamente.' });
+        } else {
+            bloqueData.activo = true;
+            bloqueData.auditoriaCreacion = { nombre: currentUserName, timestamp: Date.now() };
+            await addDoc(collection(db, "control_microformas"), bloqueData);
+            Swal.fire({ icon: 'success', title: 'Bloque Registrado', text: 'El bloque de microformas se añadió con éxito.' });
         }
 
-        function renderTablaMicroformas() {
-            const tbody = document.getElementById('tabla-microformas-body');
-            const tfoot = document.getElementById('tabla-microformas-foot');
-            if (!tbody || !tfoot) return;
+        cerrarModalMicroforma();
+        await cargarMicroformasDesdeCloud();
+    } catch (e) {
+        Swal.fire('Error', e.message, 'error');
+    }
+};
 
-            tbody.innerHTML = '';
-            if (baseDatosMicroformas.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="13" class="text-center text-muted py-4">No hay bloques registrados en el sistema.</td></tr>`;
-                tfoot.innerHTML = '';
-                return;
-            }
+async function cargarMicroformasDesdeCloud() {
+    try {
+        const querySnapshot = await getDocs(collection(db, "control_microformas"));
+        baseDatosMicroformas = [];
+        querySnapshot.forEach((docSnap) => {
+            const data = { id: docSnap.id, ...docSnap.data() };
+            if (data.activo !== false) baseDatosMicroformas.push(data);
+        });
 
-            let sumaPaquetes = 0;
-            let sumaFolios = 0;
-            let sumaImagenes = 0;
-            let sumaRegistros = 0;
-            let sumaExpedientes = 0;
+        baseDatosMicroformas.sort((a, b) => (a.bloque || 0) - (b.bloque || 0));
+        renderTablaMicroformas();
+        actualizarDashboardGlobal();
+    } catch (e) {
+        console.error("Error al cargar microformas:", e);
+        Swal.fire('Error de Conexión', 'No se pudo cargar el control de microformas: ' + e.message, 'error');
+    }
+}
 
-            const currentUserObj = auth.currentUser;
-            const currentUserName = currentUserObj ? (currentUserObj.displayName ? normalizarTexto(currentUserObj.displayName) : normalizarTexto(currentUserObj.email.split('@')[0])) : '';
-            const esAdmin = esUsuarioAdministradorLog(currentUserName);
+function renderTablaMicroformas() {
+    const tbody = document.getElementById('tabla-microformas-body');
+    const tfoot = document.getElementById('tabla-microformas-foot');
+    if (!tbody || !tfoot) return;
 
-            baseDatosMicroformas.forEach(item => {
-                sumaPaquetes += item.cantPaquetes || 0;
-                sumaFolios += item.folios || 0;
-                sumaImagenes += item.imagenes || 0;
-                sumaRegistros += item.registros || 0;
-                sumaExpedientes += item.expedientes || 0;
+    tbody.innerHTML = '';
+    if (baseDatosMicroformas.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="13" class="text-center text-muted py-4">No hay bloques registrados en el sistema.</td></tr>`;
+        tfoot.innerHTML = '';
+        return;
+    }
 
-                const fInicio = item.fecInicio ? item.fecInicio.split('-').reverse().join('/') : '';
-                const fFin = item.fecFin ? item.fecFin.split('-').reverse().join('/') : '';
-                const fGrab = item.fecGrabacion ? item.fecGrabacion.split('-').reverse().join('/') : '';
-                const textoRango = item.rango || (item.paqueteDesde && item.paqueteHasta ? `${item.paqueteDesde} al ${item.paqueteHasta}` : '');
+    let sumaPaquetes = 0;
+    let sumaFolios = 0;
+    let sumaImagenes = 0;
+    let sumaRegistros = 0;
+    let sumaExpedientes = 0;
 
-                const tr = `<tr>
-                    <td class="fw-bold">${item.bloque}</td>
-                    <td class="text-start ps-2"><code>${textoRango}</code></td>
-                    <td class="fw-bold">${item.cantPaquetes}</td>
-                    <td class="text-start ps-2">${item.juzgado}</td>
-                    <td>${item.folios.toLocaleString()}</td>
-                    <td class="fw-bold">${item.imagenes.toLocaleString()}</td>
-                    <td>${item.registros.toLocaleString()}</td>
-                    <td class="fw-bold">${item.expedientes.toLocaleString()}</td>
-                    <td>${item.mes}</td>
-                    <td>${fInicio}</td>
-                    <td>${fFin}</td>
-                    <td>${fGrab}</td>
-                    <td class="col-acciones no-print">
-                        ${esAdmin ? `
-                            <button class="btn btn-xs btn-outline-primary py-0 px-1 me-1" onclick="window.abrirModalMicroforma('${item.id}')" title="Editar"><i class="bi bi-pencil"></i></button>
-                            <button class="btn btn-xs btn-outline-danger py-0 px-1" onclick="window.eliminarMicroforma('${item.id}')" title="Eliminar"><i class="bi bi-trash"></i></button>
-                        ` : `<span class="text-muted small">Sólo lectura</span>`}
-                    </td>
-                </tr>`;
-                tbody.insertAdjacentHTML('beforeend', tr);
-            });
+    const currentUserObj = auth.currentUser;
+    const currentUserName = currentUserObj ? (currentUserObj.displayName ? normalizarTexto(currentUserObj.displayName) : normalizarTexto(currentUserObj.email.split('@')[0])) : '';
+    const esEditor = puedeEditarMicroformas(currentUserName);
 
-            const totalBloques = baseDatosMicroformas.length;
-            const promPaquetes = totalBloques > 0 ? (sumaPaquetes / totalBloques).toFixed(0) : 0;
-            const promFolios = totalBloques > 0 ? Math.round(sumaFolios / totalBloques) : 0;
-            const promImagenes = totalBloques > 0 ? Math.round(sumaImagenes / totalBloques) : 0;
-            const promRegistros = totalBloques > 0 ? Math.round(sumaRegistros / totalBloques) : 0;
-            const promExpedientes = totalBloques > 0 ? Math.round(sumaExpedientes / totalBloques) : 0;
+    baseDatosMicroformas.forEach(item => {
+        // Fallbacks numéricos: evita que un bloque con campos faltantes rompa toda la tabla
+        const folios = item.folios || 0;
+        const imagenes = item.imagenes || 0;
+        const registros = item.registros || 0;
+        const expedientes = item.expedientes || 0;
+        const cantPaquetes = item.cantPaquetes || 0;
 
-            tfoot.innerHTML = `
-                <tr class="table-warning">
-                    <td colspan="2" class="text-end pe-3">TOTALES</td>
-                    <td>${sumaPaquetes}</td>
-                    <td>-</td>
-                    <td>${sumaFolios.toLocaleString()}</td>
-                    <td>${sumaImagenes.toLocaleString()}</td>
-                    <td>${sumaRegistros.toLocaleString()}</td>
-                    <td>${sumaExpedientes.toLocaleString()}</td>
-                    <td colspan="5"></td>
-                </tr>
-                <tr class="table-info">
-                    <td colspan="2" class="text-end pe-3">PROMEDIO</td>
-                    <td>${promPaquetes}</td>
-                    <td>-</td>
-                    <td>${promFolios.toLocaleString()}</td>
-                    <td>${promImagenes.toLocaleString()}</td>
-                    <td>${promRegistros.toLocaleString()}</td>
-                    <td>${promExpedientes.toLocaleString()}</td>
-                    <td colspan="5"></td>
-                </tr>
-            `;
-        }
+        sumaPaquetes += cantPaquetes;
+        sumaFolios += folios;
+        sumaImagenes += imagenes;
+        sumaRegistros += registros;
+        sumaExpedientes += expedientes;
 
-        window.eliminarMicroforma = async function(id) {
-            const confirmacion = await Swal.fire({
-                icon: 'warning',
-                title: '¿Eliminar bloque?',
-                text: 'El bloque de microformas quedará inactivo.',
-                showCancelButton: true,
-                confirmButtonText: 'Sí, eliminar',
-                confirmButtonColor: '#800000'
-            });
+        const fInicio = item.fecInicio ? item.fecInicio.split('-').reverse().join('/') : '';
+        const fFin = item.fecFin ? item.fecFin.split('-').reverse().join('/') : '';
+        const fGrab = item.fecGrabacion ? item.fecGrabacion.split('-').reverse().join('/') : '';
+        const textoRango = item.rango || (item.paqueteDesde && item.paqueteHasta ? `${item.paqueteDesde} al ${item.paqueteHasta}` : 'N/A');
 
-            if (!confirmacion.isConfirmed) return;
+        const tr = `<tr>
+            <td class="fw-bold">${item.bloque ?? 'N/A'}</td>
+            <td class="text-start ps-2"><code>${textoRango}</code></td>
+            <td class="fw-bold">${cantPaquetes}</td>
+            <td class="text-start ps-2">${item.juzgado || 'N/A'}</td>
+            <td>${folios.toLocaleString()}</td>
+            <td class="fw-bold">${imagenes.toLocaleString()}</td>
+            <td>${registros.toLocaleString()}</td>
+            <td class="fw-bold">${expedientes.toLocaleString()}</td>
+            <td>${item.mes || 'N/A'}</td>
+            <td>${fInicio}</td>
+            <td>${fFin}</td>
+            <td>${fGrab}</td>
+            <td class="col-acciones no-print">
+                ${esEditor ? `
+                    <button class="btn btn-xs btn-outline-primary py-0 px-1 me-1" onclick="window.abrirModalMicroforma('${item.id}')" title="Editar"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-xs btn-outline-danger py-0 px-1" onclick="window.eliminarMicroforma('${item.id}')" title="Eliminar"><i class="bi bi-trash"></i></button>
+                ` : `<span class="text-muted small">Sólo lectura</span>`}
+            </td>
+        </tr>`;
+        tbody.insertAdjacentHTML('beforeend', tr);
+    });
 
-            try {
-                await updateDoc(doc(db, "control_microformas", id), { activo: false });
-                Swal.fire({ icon: 'success', title: 'Bloque eliminado', timer: 1500, showConfirmButton: false });
-                await cargarMicroformasDesdeCloud();
-            } catch (e) {
-                Swal.fire('Error', e.message, 'error');
-            }
-        };
+    const totalBloques = baseDatosMicroformas.length;
+    const promPaquetes = totalBloques > 0 ? (sumaPaquetes / totalBloques).toFixed(0) : 0;
+    const promFolios = totalBloques > 0 ? Math.round(sumaFolios / totalBloques) : 0;
+    const promImagenes = totalBloques > 0 ? Math.round(sumaImagenes / totalBloques) : 0;
+    const promRegistros = totalBloques > 0 ? Math.round(sumaRegistros / totalBloques) : 0;
+    const promExpedientes = totalBloques > 0 ? Math.round(sumaExpedientes / totalBloques) : 0;
+
+    tfoot.innerHTML = `
+        <tr class="table-warning">
+            <td colspan="2" class="text-end pe-3">TOTALES</td>
+            <td>${sumaPaquetes}</td>
+            <td>-</td>
+            <td>${sumaFolios.toLocaleString()}</td>
+            <td>${sumaImagenes.toLocaleString()}</td>
+            <td>${sumaRegistros.toLocaleString()}</td>
+            <td>${sumaExpedientes.toLocaleString()}</td>
+            <td colspan="5"></td>
+        </tr>
+        <tr class="table-info">
+            <td colspan="2" class="text-end pe-3">PROMEDIO</td>
+            <td>${promPaquetes}</td>
+            <td>-</td>
+            <td>${promFolios.toLocaleString()}</td>
+            <td>${promImagenes.toLocaleString()}</td>
+            <td>${promRegistros.toLocaleString()}</td>
+            <td>${promExpedientes.toLocaleString()}</td>
+            <td colspan="5"></td>
+        </tr>
+    `;
+}
+
+window.eliminarMicroforma = async function(id) {
+    const currentUserObj = auth.currentUser;
+    const currentUserName = currentUserObj ? (currentUserObj.displayName ? normalizarTexto(currentUserObj.displayName) : normalizarTexto(currentUserObj.email.split('@')[0])) : 'DESCONOCIDO';
+
+    if (!puedeEditarMicroformas(currentUserName)) {
+        Swal.fire('Acceso denegado', 'No cuenta con autorización para eliminar bloques de microformas.', 'error');
+        return;
+    }
+
+    const confirmacion = await Swal.fire({
+        icon: 'warning',
+        title: '¿Eliminar bloque?',
+        text: 'El bloque de microformas quedará inactivo.',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        confirmButtonColor: '#800000'
+    });
+
+    if (!confirmacion.isConfirmed) return;
+
+    try {
+        await updateDoc(doc(db, "control_microformas", id), { activo: false });
+        Swal.fire({ icon: 'success', title: 'Bloque eliminado', timer: 1500, showConfirmButton: false });
+        await cargarMicroformasDesdeCloud();
+    } catch (e) {
+        Swal.fire('Error', e.message, 'error');
+    }
+};
 
         let indiceEdicionRango = null;
 
