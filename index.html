@@ -173,15 +173,15 @@
             display: block;
         }
 
-        /* Estilos específicos para impresión limpia del Dashboard */
+        /* Estilos específicos para impresión limpia del Dashboard y Microformas */
         @media print {
             body * {
                 visibility: hidden;
             }
-            #view-dashboard, #view-dashboard * {
+            #view-dashboard, #view-dashboard *, #view-microformas, #view-microformas * {
                 visibility: visible;
             }
-            #view-dashboard {
+            #view-dashboard, #view-microformas {
                 position: absolute;
                 left: 0;
                 top: 0;
@@ -249,6 +249,10 @@
                     <i class="bi bi-arrow-return-left"></i> Reingresos
                 </a>
                 <a class="nav-link" data-view="view-consultas-reingresos" onclick="switchView('view-consultas-reingresos', 'Consultar Historial de Reingresos')"><i class="bi bi-search"></i> Consultar Reingresos</a>
+                <!-- Menú de Microformas exclusivo (Alfredo, Roberto Dávila, Jorge Desposorio) -->
+                <a class="nav-link" id="menu-link-microformas" href="#" onclick="switchView('view-microformas', 'Control de Producción de Microformas')" style="display: none;">
+                    <i class="bi bi-file-earmark-spreadsheet-fill"></i> Control Microformas
+                </a>
                 <a class="nav-link" href="#" onclick="switchView('view-perfil', 'Mi Perfil de Usuario')">
                     <i class="bi bi-person-gear"></i> Mi Perfil / Cuenta
                 </a>
@@ -525,6 +529,58 @@
                 </div>
             </section>
 
+            <!-- MÓDULO DE CONTROL DE MICROFORMAS -->
+            <section id="view-microformas" class="view-section">
+                <div class="card p-4 border-0 shadow-sm mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+                        <div>
+                            <h4 class="fw-bold text-dark m-0"><i class="bi bi-file-earmark-spreadsheet-fill me-2 text-primary"></i>Control de Producción de Microformas Digitales</h4>
+                            <p class="text-muted small m-0">Corte Superior de Justicia del Santa - Apoyo Administrativo (CSJSA)</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-dark btn-sm d-flex align-items-center gap-1" onclick="window.print()">
+                                <i class="bi bi-printer"></i> Imprimir Reporte
+                            </button>
+                            <button class="btn btn-primary btn-sm d-flex align-items-center gap-1" id="btn-nueva-microforma" onclick="abrirModalMicroforma()">
+                                <i class="bi bi-plus-circle"></i> + Agregar Bloque
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover align-middle text-center" style="font-size: 0.78rem;" id="tabla-microformas-control">
+                            <thead class="table-dark" style="vertical-align: middle;">
+                                <tr>
+                                    <th rowspan="2">BLOQUE</th>
+                                    <th rowspan="2">RANGO PAQUETES</th>
+                                    <th rowspan="2">CANTIDAD PAQUETES</th>
+                                    <th rowspan="2">JUZGADO</th>
+                                    <th colspan="2">FOLIOS / IMÁGENES</th>
+                                    <th rowspan="2">TOTAL REGISTROS</th>
+                                    <th rowspan="2">CANT. EXPEDIENTES</th>
+                                    <th rowspan="2">MES</th>
+                                    <th colspan="2">FECHAS</th>
+                                    <th rowspan="2">FECHA GRABACION</th>
+                                    <th rowspan="2" class="col-acciones no-print">ACCIÓN</th>
+                                </tr>
+                                <tr>
+                                    <th>FOLIOS</th>
+                                    <th>IMÁGENES</th>
+                                    <th>FECHA INICIO</th>
+                                    <th>FECHA FIN</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-microformas-body">
+                                <!-- Se llena dinámicamente -->
+                            </tbody>
+                            <tfoot class="table-secondary fw-bold" id="tabla-microformas-foot">
+                                <!-- Totales y promedios -->
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
             <!-- FORMULARIO DE INVENTARIO MULTI-RANGO -->
             <section id="view-inventario" class="view-section">
                 <form id="form-inventario">
@@ -787,6 +843,76 @@
         </main>
     </div>
 
+    <!-- MODAL PARA AGREGAR / EDITAR BLOQUE DE MICROFORMAS -->
+    <div class="modal fade" id="modalMicroforma" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-dark text-white border-0">
+                    <h6 class="modal-title fw-bold" id="modal-microforma-titulo"><i class="bi bi-file-earmark-plus me-2"></i>Registrar Bloque de Microformas</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="cerrarModalMicroforma()"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="form-modal-microforma">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">N° Bloque</label>
+                                <input type="number" class="form-control form-control-sm" id="mf-bloque" required placeholder="Ej: 33">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Rango Paquetes</label>
+                                <input type="text" class="form-control form-control-sm" id="mf-rango" required placeholder="Ej: 25-126 AL 25-130">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">Cant. Paquetes</label>
+                                <input type="number" class="form-control form-control-sm" id="mf-cant-paquetes" required placeholder="Ej: 4">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Juzgado</label>
+                                <input type="text" class="form-control form-control-sm" id="mf-juzgado" required placeholder="Ej: 3er JUZG. FAMILIA">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">Folios</label>
+                                <input type="number" class="form-control form-control-sm" id="mf-folios" required placeholder="7000">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">Imágenes</label>
+                                <input type="number" class="form-control form-control-sm" id="mf-imagenes" required placeholder="7500">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">Total Registros</label>
+                                <input type="number" class="form-control form-control-sm" id="mf-registros" required placeholder="250">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">Cant. Expedientes</label>
+                                <input type="number" class="form-control form-control-sm" id="mf-expedientes" required placeholder="45">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Mes</label>
+                                <input type="text" class="form-control form-control-sm" id="mf-mes" required placeholder="Ej: MAYO / JUNIO">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Fecha Inicio</label>
+                                <input type="date" class="form-control form-control-sm" id="mf-fec-inicio" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Fecha Fin</label>
+                                <input type="date" class="form-control form-control-sm" id="mf-fec-fin" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold">Fecha Grabación</label>
+                                <input type="date" class="form-control form-control-sm" id="mf-fec-grabacion" required>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top mt-3">
+                        <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal" onclick="cerrarModalMicroforma()">Cancelar</button>
+                        <button type="button" class="btn btn-primary btn-sm px-4 fw-bold" id="btn-guardar-microforma" onclick="guardarMicroforma()">Guardar Bloque</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL PRINCIPAL: AGREGAR RANGO CON SUS PROPIOS FALTANTES -->
     <div class="modal fade" id="modalAgregarRango" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -936,7 +1062,8 @@
 
         const PERMISOS = {
             reingresos_escritura: ["ALFREDO CRUZADO", "ACRUZADO", "ROBERTO DAVILA", "RDAVILA", "JORGE IZQUIERDO", "JIZQUIERDO", "MANUEL BARANDIARAN", "MBARANDIARAN"],
-            inventario_escritura: ["ALFREDO CRUZADO", "ACRUZADO", "ROBERTO DAVILA", "RDAVILA", "JORGE IZQUIERDO", "JIZQUIERDO", "MANUEL BARANDIARAN", "MBARANDIARAN", "TEOFILO GABINO", "TGABINO"]
+            inventario_escritura: ["ALFREDO CRUZADO", "ACRUZADO", "ROBERTO DAVILA", "RDAVILA", "JORGE IZQUIERDO", "JIZQUIERDO", "MANUEL BARANDIARAN", "MBARANDIARAN", "TEFILO GABINO", "TGABINO"],
+            microformas_escritura: ["ALFREDO CRUZADO", "ACRUZADO"] // Solo Alfredo edita microformas. Roberto y Jorge solo visualizan e imprimen.
         };
 
         function normalizarTexto(texto) {
@@ -949,22 +1076,34 @@
             return u === "ALFREDO CRUZADO" || u === "ACRUZADO";
         }
 
+        function esUsuarioMicroformasVisualizador(nombreUsuario) {
+            const u = normalizarTexto(nombreUsuario);
+            return u === "ROBERTO DÁVILA" || u === "ROBERTO DAVILA" || u === "RDAVILA" || u === "JORGE DESPOSORIO" || u === "JDESPOSORIO" || esUsuarioAdministradorLog(u);
+        }
+
         function aplicarPermisos(nombreUsuario) {
             const usuarioLimpio = normalizarTexto(nombreUsuario);
             
             const reingresosLimpios = PERMISOS.reingresos_escritura.map(n => normalizarTexto(n));
             const inventarioLimpios = PERMISOS.inventario_escritura.map(n => normalizarTexto(n));
+            const microformasLimpios = PERMISOS.microformas_escritura.map(n => normalizarTexto(n));
 
             const puedeReingresos = reingresosLimpios.includes(usuarioLimpio);
             const puedeInventario = inventarioLimpios.includes(usuarioLimpio);
+            const puedeMicroformasEscritura = microformasLimpios.includes(usuarioLimpio);
+            const puedeVerMicroformas = esUsuarioMicroformasVisualizador(usuarioLimpio);
             const esAdminLog = esUsuarioAdministradorLog(usuarioLimpio);
+
+            const menuMicroformas = document.getElementById('menu-link-microformas');
+            if (menuMicroformas) {
+                menuMicroformas.style.display = puedeVerMicroformas ? 'flex' : 'none';
+            }
 
             const menuAuditoria = document.getElementById('menu-link-auditoria');
             if (menuAuditoria) {
                 menuAuditoria.style.display = esAdminLog ? 'flex' : 'none';
             }
 
-            // Ocultar o mostrar de manera absoluta el botón de impresión del Dashboard Global exclusivamente para Alfredo
             const btnImprimirDash = document.getElementById('btn-imprimir-dashboard');
             if (btnImprimirDash) {
                 if (esAdminLog) {
@@ -972,6 +1111,12 @@
                 } else {
                     btnImprimirDash.style.setProperty('display', 'none', 'important');
                 }
+            }
+
+            // Control de Botón de Nueva Microforma (Solo Alfredo)
+            const btnNuevaMicroforma = document.getElementById('btn-nueva-microforma');
+            if (btnNuevaMicroforma) {
+                btnNuevaMicroforma.style.display = puedeMicroformasEscritura ? 'flex' : 'none';
             }
 
             document.getElementById('btn-guardar-reingreso')?.toggleAttribute('disabled', !puedeReingresos);
@@ -1003,12 +1148,12 @@
             }
 
             const avisoExistente = document.getElementById('aviso-solo-consulta');
-            if (!puedeReingresos || !puedeInventario) {
+            if (!puedeReingresos || !puedeInventario || !puedeMicroformasEscritura) {
                 if (!avisoExistente) {
                     const aviso = document.createElement('div');
                     aviso.id = 'aviso-solo-consulta';
                     aviso.className = 'alert alert-warning py-2 px-3 mb-3 small fw-medium';
-                    aviso.innerHTML = '<i class="bi bi-eye me-1"></i> Modo solo consulta: no tiene permisos de escritura en algunas secciones.';
+                    aviso.innerHTML = '<i class="bi bi-eye me-1"></i> Modo de visualización/restringido: algunas acciones están reservadas para administradores.';
                     document.getElementById('main-content')?.prepend(aviso);
                 }
             } else if (avisoExistente) {
@@ -1045,8 +1190,11 @@
         let listaRangosCenso = [];    
         let listaFaltantesModal = []; 
         let baseDatosReingresos = [];
+        let baseDatosMicroformas = [];
         let idReingresoEnEdicion = null;
+        let idMicroformaEnEdicion = null;
         let modalInstance = null;
+        let modalMicroformaInstance = null;
 
         window.addEventListener('DOMContentLoaded', () => {
             const correoGuardado = localStorage.getItem('saamir_ultimo_correo');
@@ -1128,6 +1276,15 @@
                 }
             }
 
+            if (viewId === 'view-microformas') {
+                const userTitle = auth.currentUser ? normalizarTexto(auth.currentUser.displayName || auth.currentUser.email.split('@')[0]) : '';
+                if (!esUsuarioMicroformasVisualizador(userTitle)) {
+                    Swal.fire('Acceso Denegado', 'No cuenta con autorización para visualizar este módulo.', 'error');
+                    return;
+                }
+                cargarMicroformasDesdeCloud();
+            }
+
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('#sidebar .nav-link').forEach(l => l.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
@@ -1184,6 +1341,7 @@
                 
                 await cargarInventariosDesdeCloud().catch(err => console.error("Error al cargar inventarios:", err));
                 await cargarHistorialReingresosParaDashboard().catch(err => console.error("Error al cargar reingresos:", err));
+                await cargarMicroformasDesdeCloud().catch(err => console.error("Error al cargar microformas:", err));
             } else {
                 document.getElementById('app-container').style.display = 'none';
                 document.getElementById('login-container').style.display = 'flex';
@@ -1242,6 +1400,211 @@
                 } else { Swal.fire('Error', error.message, 'error'); }
             }
         });
+
+        // ==================== LÓGICA DE MICROFORMAS ====================
+        window.abrirModalMicroforma = function(id = null) {
+            idMicroformaEnEdicion = id;
+            document.getElementById('form-modal-microforma').reset();
+            
+            if (id !== null) {
+                const item = baseDatosMicroformas.find(m => m.id === id);
+                if (item) {
+                    document.getElementById('mf-bloque').value = item.bloque || '';
+                    document.getElementById('mf-rango').value = item.rango || '';
+                    document.getElementById('mf-cant-paquetes').value = item.cantPaquetes || '';
+                    document.getElementById('mf-juzgado').value = item.juzgado || '';
+                    document.getElementById('mf-folios').value = item.folios || '';
+                    document.getElementById('mf-imagenes').value = item.imagenes || '';
+                    document.getElementById('mf-registros').value = item.registros || '';
+                    document.getElementById('mf-expedientes').value = item.expedientes || '';
+                    document.getElementById('mf-mes').value = item.mes || '';
+                    document.getElementById('mf-fec-inicio').value = item.fecInicio || '';
+                    document.getElementById('mf-fec-fin').value = item.fecFin || '';
+                    document.getElementById('mf-fec-grabacion').value = item.fecGrabacion || '';
+                    document.getElementById('modal-microforma-titulo').innerHTML = '<i class="bi bi-pencil-square me-2"></i>Editar Bloque de Microformas';
+                    document.getElementById('btn-guardar-microforma').innerText = 'Guardar Cambios';
+                }
+            } else {
+                document.getElementById('modal-microforma-titulo').innerHTML = '<i class="bi bi-file-earmark-plus me-2"></i>Registrar Bloque de Microformas';
+                document.getElementById('btn-guardar-microforma').innerText = 'Guardar Bloque';
+            }
+
+            modalMicroformaInstance = new bootstrap.Modal(document.getElementById('modalMicroforma'));
+            modalMicroformaInstance.show();
+        };
+
+        window.cerrarModalMicroforma = function() {
+            idMicroformaEnEdicion = null;
+            if (modalMicroformaInstance) modalMicroformaInstance.hide();
+        };
+
+        window.guardarMicroforma = async function() {
+            const currentUserObj = auth.currentUser;
+            const currentUserName = currentUserObj ? (currentUserObj.displayName ? normalizarTexto(currentUserObj.displayName) : normalizarTexto(currentUserObj.email.split('@')[0])) : 'DESCONOCIDO';
+
+            if (!esUsuarioAdministradorLog(currentUserName)) {
+                Swal.fire('Acceso denegado', 'Solo Alfredo Cruzado puede registrar o modificar bloques de microformas.', 'error');
+                return;
+            }
+
+            const bloqueData = {
+                bloque: parseInt(document.getElementById('mf-bloque').value, 10) || 0,
+                rango: document.getElementById('mf-rango').value.trim(),
+                cantPaquetes: parseInt(document.getElementById('mf-cant-paquetes').value, 10) || 0,
+                juzgado: document.getElementById('mf-juzgado').value.trim().toUpperCase(),
+                folios: parseInt(document.getElementById('mf-folios').value, 10) || 0,
+                imagenes: parseInt(document.getElementById('mf-imagenes').value, 10) || 0,
+                registros: parseInt(document.getElementById('mf-registros').value, 10) || 0,
+                expedientes: parseInt(document.getElementById('mf-expedientes').value, 10) || 0,
+                mes: document.getElementById('mf-mes').value.trim().toUpperCase(),
+                fecInicio: document.getElementById('mf-fec-inicio').value,
+                fecFin: document.getElementById('mf-fec-fin').value,
+                fecGrabacion: document.getElementById('mf-fec-grabacion').value,
+                timestamp: Date.now()
+            };
+
+            try {
+                if (idMicroformaEnEdicion) {
+                    bloqueData.auditoriaEdicion = { nombre: currentUserName, timestamp: Date.now() };
+                    await updateDoc(doc(db, "control_microformas", idMicroformaEnEdicion), bloqueData);
+                    Swal.fire({ icon: 'success', title: 'Bloque Actualizado', text: 'Los cambios se guardaron correctamente.' });
+                } else {
+                    bloqueData.activo = true;
+                    bloqueData.auditoriaCreacion = { nombre: currentUserName, timestamp: Date.now() };
+                    await addDoc(collection(db, "control_microformas"), bloqueData);
+                    Swal.fire({ icon: 'success', title: 'Bloque Registrado', text: 'El bloque de microformas se añadió con éxito.' });
+                }
+
+                cerrarModalMicroforma();
+                await cargarMicroformasDesdeCloud();
+            } catch (e) {
+                Swal.fire('Error', e.message, 'error');
+            }
+        };
+
+        async function cargarMicroformasDesdeCloud() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "control_microformas"));
+                baseDatosMicroformas = [];
+                querySnapshot.forEach((docSnap) => {
+                    const data = { id: docSnap.id, ...docSnap.data() };
+                    if (data.activo !== false) baseDatosMicroformas.push(data);
+                });
+
+                baseDatosMicroformas.sort((a, b) => (a.bloque || 0) - (b.bloque || 0));
+                renderTablaMicroformas();
+            } catch (e) {
+                console.error("Error al cargar microformas:", e);
+            }
+        }
+
+        function renderTablaMicroformas() {
+            const tbody = document.getElementById('tabla-microformas-body');
+            const tfoot = document.getElementById('tabla-microformas-foot');
+            if (!tbody || !tfoot) return;
+
+            tbody.innerHTML = '';
+            if (baseDatosMicroformas.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="13" class="text-center text-muted py-4">No hay bloques registrados en el sistema.</td></tr>`;
+                tfoot.innerHTML = '';
+                return;
+            }
+
+            let sumaPaquetes = 0;
+            let sumaFolios = 0;
+            let sumaImagenes = 0;
+            let sumaRegistros = 0;
+            let sumaExpedientes = 0;
+
+            const currentUserObj = auth.currentUser;
+            const currentUserName = currentUserObj ? (currentUserObj.displayName ? normalizarTexto(currentUserObj.displayName) : normalizarTexto(currentUserObj.email.split('@')[0])) : '';
+            const esAdmin = esUsuarioAdministradorLog(currentUserName);
+
+            baseDatosMicroformas.forEach(item => {
+                sumaPaquetes += item.cantPaquetes || 0;
+                sumaFolios += item.folios || 0;
+                sumaImagenes += item.imagenes || 0;
+                sumaRegistros += item.registros || 0;
+                sumaExpedientes += item.expedientes || 0;
+
+                const fInicio = item.fecInicio ? item.fecInicio.split('-').reverse().join('/') : '';
+                const fFin = item.fecFin ? item.fecFin.split('-').reverse().join('/') : '';
+                const fGrab = item.fecGrabacion ? item.fecGrabacion.split('-').reverse().join('/') : '';
+
+                const tr = `<tr>
+                    <td class="fw-bold">${item.bloque}</td>
+                    <td class="text-start ps-2"><code>${item.rango}</code></td>
+                    <td class="fw-bold">${item.cantPaquetes}</td>
+                    <td class="text-start ps-2">${item.juzgado}</td>
+                    <td>${item.folios.toLocaleString()}</td>
+                    <td class="fw-bold">${item.imagenes.toLocaleString()}</td>
+                    <td>${item.registros.toLocaleString()}</td>
+                    <td class="fw-bold">${item.expedientes.toLocaleString()}</td>
+                    <td>${item.mes}</td>
+                    <td>${fInicio}</td>
+                    <td>${fFin}</td>
+                    <td>${fGrab}</td>
+                    <td class="col-acciones no-print">
+                        ${esAdmin ? `
+                            <button class="btn btn-xs btn-outline-primary py-0 px-1 me-1" onclick="window.abrirModalMicroforma('${item.id}')" title="Editar"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-xs btn-outline-danger py-0 px-1" onclick="window.eliminarMicroforma('${item.id}')" title="Eliminar"><i class="bi bi-trash"></i></button>
+                        ` : `<span class="text-muted small">Sólo lectura</span>`}
+                    </td>
+                </tr>`;
+                tbody.insertAdjacentHTML('beforeend', tr);
+            });
+
+            const totalBloques = baseDatosMicroformas.length;
+            const promPaquetes = totalBloques > 0 ? (sumaPaquetes / totalBloques).toFixed(0) : 0;
+            const promFolios = totalBloques > 0 ? Math.round(sumaFolios / totalBloques) : 0;
+            const promImagenes = totalBloques > 0 ? Math.round(sumaImagenes / totalBloques) : 0;
+            const promRegistros = totalBloques > 0 ? Math.round(sumaRegistros / totalBloques) : 0;
+            const promExpedientes = totalBloques > 0 ? Math.round(sumaExpedientes / totalBloques) : 0;
+
+            tfoot.innerHTML = `
+                <tr class="table-warning">
+                    <td colspan="2" class="text-end pe-3">TOTALES</td>
+                    <td>${sumaPaquetes}</td>
+                    <td>-</td>
+                    <td>${sumaFolios.toLocaleString()}</td>
+                    <td>${sumaImagenes.toLocaleString()}</td>
+                    <td>${sumaRegistros.toLocaleString()}</td>
+                    <td>${sumaExpedientes.toLocaleString()}</td>
+                    <td colspan="5"></td>
+                </tr>
+                <tr class="table-info">
+                    <td colspan="2" class="text-end pe-3">PROMEDIO</td>
+                    <td>${promPaquetes}</td>
+                    <td>-</td>
+                    <td>${promFolios.toLocaleString()}</td>
+                    <td>${promImagenes.toLocaleString()}</td>
+                    <td>${promRegistros.toLocaleString()}</td>
+                    <td>${promExpedientes.toLocaleString()}</td>
+                    <td colspan="5"></td>
+                </tr>
+            `;
+        }
+
+        window.eliminarMicroforma = async function(id) {
+            const confirmacion = await Swal.fire({
+                icon: 'warning',
+                title: '¿Eliminar bloque?',
+                text: 'El bloque de microformas quedará inactivo.',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                confirmButtonColor: '#800000'
+            });
+
+            if (!confirmacion.isConfirmed) return;
+
+            try {
+                await updateDoc(doc(db, "control_microformas", id), { activo: false });
+                Swal.fire({ icon: 'success', title: 'Bloque eliminado', timer: 1500, showConfirmButton: false });
+                await cargarMicroformasDesdeCloud();
+            } catch (e) {
+                Swal.fire('Error', e.message, 'error');
+            }
+        };
 
         let indiceEdicionRango = null;
 
@@ -1713,7 +2076,6 @@
 
                 let logs = [];
 
-                // 1. Auditoría de Inicios de Sesión
                 try {
                     const snapLogins = await getDocs(collection(db, "auditoria_logins"));
                     snapLogins.forEach(docSnap => {
@@ -1730,7 +2092,6 @@
                     });
                 } catch(err) { console.warn("No se pudo cargar auditoria_logins:", err); }
 
-                // 2. Auditoría de Inventario (Creaciones, Ediciones y Bajas)
                 try {
                     const snapCenso = await getDocs(collection(db, "censo_institucional"));
                     snapCenso.forEach(docSnap => {
@@ -1770,7 +2131,6 @@
                     });
                 } catch(err) { console.warn("No se pudo cargar censo_institucional:", err); }
 
-                // 3. Auditoría de Reingresos (Creaciones, Ediciones y Bajas)
                 try {
                     const snapReingresos = await getDocs(collection(db, "reingresos"));
                     snapReingresos.forEach(docSnap => {
@@ -1809,6 +2169,22 @@
                         }
                     });
                 } catch(err) { console.warn("No se pudo cargar reingresos:", err); }
+
+                try {
+                    const snapMicro = await getDocs(collection(db, "control_microformas"));
+                    snapMicro.forEach(docSnap => {
+                        const d = docSnap.data();
+                        const ts = d.timestamp || d.auditoriaCreacion?.timestamp || 0;
+                        logs.push({
+                            fecha: ts ? new Date(ts).toLocaleString() : 'N/A',
+                            timestamp: ts,
+                            modulo: 'Control Microformas',
+                            accion: d.auditoriaEdicion ? 'Actualización de Bloque' : 'Creación de Bloque',
+                            usuario: d.auditoriaEdicion?.nombre || d.auditoriaCreacion?.nombre || 'ALFREDO CRUZADO',
+                            detalle: `Bloque N° ${d.bloque} | Rango: ${d.rango} | Juzgado: ${d.juzgado}`
+                        });
+                    });
+                } catch(err) { console.warn("No se pudo cargar control_microformas:", err); }
 
                 logs.sort((a, b) => b.timestamp - a.timestamp);
 
@@ -1971,7 +2347,6 @@
                 const currentUserName = currentUserObj ? (currentUserObj.displayName ? normalizarTexto(currentUserObj.displayName) : normalizarTexto(currentUserObj.email.split('@')[0])) : 'DESCONOCIDO';
 
                 if (idReingresoEnEdicion) {
-                    // Modo Actualización
                     const datosActualizados = {
                         fecha: document.getElementById('re-fecha').value,
                         solicitante: document.getElementById('re-solicitante').value,
@@ -1988,7 +2363,6 @@
                     await updateDoc(doc(db, "reingresos", idReingresoEnEdicion), datosActualizados);
                     Swal.fire({ icon: 'success', title: 'Reingreso Actualizado', text: 'Los cambios se guardaron correctamente.' });
                 } else {
-                    // Modo Nuevo Registro
                     const correlativo = await obtenerSiguienteCorrelativoReingreso();
                     const datos = {
                         correlativo,
