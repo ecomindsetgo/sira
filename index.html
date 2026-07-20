@@ -1029,6 +1029,18 @@
             }
         }
 
+        async function registrarInicioSesionEnCloud(user, nombreUsuario) {
+            try {
+                await addDoc(collection(db, "auditoria_logins"), {
+                    email: user.email || '',
+                    nombre: nombreUsuario,
+                    timestamp: Date.now()
+                });
+            } catch (e) {
+                console.error("Error al registrar login en Cloud:", e);
+            }
+        }
+
         let baseDatosInventario = []; 
         let listaRangosCenso = [];    
         let listaFaltantesModal = []; 
@@ -1153,6 +1165,7 @@
                 cargarDataMaestra(userTitle);
                 aplicarPermisos(userTitle);
                 sincronizarUsuarioEnFirestore(user, userTitle);
+                registrarInicioSesionEnCloud(user, userTitle);
                 inicializarSelectsReingresos();
                 resetFormularioReingreso();
                 
@@ -1431,6 +1444,9 @@
                 return;
             }
 
+            const currentUserObj = auth.currentUser;
+            const currentUserName = currentUserObj ? (currentUserObj.displayName ? normalizarTexto(currentUserObj.displayName) : normalizarTexto(currentUserObj.email.split('@')[0])) : 'DESCONOCIDO';
+
             const consolidadoLote = {
                 repositorio: document.getElementById('inv-repositorio').value,
                 fecha: document.getElementById('inv-fecha').value,
@@ -1442,8 +1458,8 @@
                 totalReal: parseInt(document.getElementById('calc-total-real').innerText, 10),
                 matrizRangos: [...listaRangosCenso],
                 auditoria: {
-                    uid: auth.currentUser?.uid || null,
-                    nombre: auth.currentUser?.displayName ? normalizarTexto(auth.currentUser.displayName) : (auth.currentUser?.email || 'desconocido'),
+                    uid: currentUserObj?.uid || null,
+                    nombre: currentUserName,
                     timestamp: Date.now()
                 }
             };
@@ -1452,6 +1468,11 @@
 
             try {
                 if (esEdicion) {
+                    consolidadoLote.auditoriaEdicion = {
+                        uid: currentUserObj?.uid || null,
+                        nombre: currentUserName,
+                        timestamp: Date.now()
+                    };
                     await updateDoc(doc(db, "censo_institucional", idLoteEnEdicion), consolidadoLote);
                 } else {
                     consolidadoLote.createdAt = Date.now();
@@ -1463,7 +1484,7 @@
                 document.getElementById('form-inventario').reset();
                 document.getElementById('inv-fecha').valueAsDate = new Date();
                 
-                document.getElementById('inv-registra').value = auth.currentUser.displayName ? normalizarTexto(auth.currentUser.displayName) : normalizarTexto(auth.currentUser.email.split('@')[0]);
+                document.getElementById('inv-registra').value = currentUserName;
                 document.getElementById('btn-guardar-inventario').innerText = 'Cerrar y Guardar Consolidado';
 
                 listaRangosCenso = [];
@@ -1485,8 +1506,8 @@
                 });
 
                 baseDatosInventario.sort((a, b) => {
-                    const ta = (a.createdAt && a.createdAt.toMillis) ? a.createdAt.toMillis() : (a.createdAt || 0);
-                    const tb = (b.createdAt && b.createdAt.toMillis) ? b.createdAt.toMillis() : (b.createdAt || 0);
+                    const ta = (a.createdAt && a.createdAt.toMillis) ? a.createdAt.toMillis() : (a.createdAt || a.auditoria?.timestamp || 0);
+                    const tb = (b.createdAt && b.createdAt.toMillis) ? b.createdAt.toMillis() : (b.createdAt || b.auditoria?.timestamp || 0);
                     return tb - ta;
                 });
 
@@ -1621,11 +1642,14 @@
                 title: '¿Expulsar Lote del Inventario?', text: "El lote quedará marcado como inactivo.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#800000', confirmButtonText: 'Sí, borrar'
             }).then(async (result) => {
                 if (result.isConfirmed) {
+                    const currentUserObj = auth.currentUser;
+                    const currentUserName = currentUserObj ? (currentUserObj.displayName ? normalizarTexto(currentUserObj.displayName) : normalizarTexto(currentUserObj.email.split('@')[0])) : 'DESCONOCIDO';
+
                     await updateDoc(doc(db, "censo_institucional", id), {
                         activo: false,
                         auditoriaEliminacion: {
-                            uid: auth.currentUser?.uid || null,
-                            nombre: auth.currentUser?.displayName ? normalizarTexto(auth.currentUser.displayName) : (auth.currentUser?.email || 'desconocido'),
+                            uid: currentUserObj?.uid || null,
+                            nombre: currentUserName,
                             timestamp: Date.now()
                         }
                     });
@@ -1676,19 +1700,48 @@
 
                 let logs = [];
 
+                // 1. Auditoría de Inicios de Sesión
+                const snapLogins = await getDocs(collection(db, "auditoria_logins"));
+                snapLogins.forEach(docSnap => {
+                    const d = docSnap.data();
+                    const fechaLogin = d.timestamp ? new Date(d.timestamp).toLocaleString() : 'N/A';
+                    logs.push({
+                        fecha: fechaLogin,
+                        timestamp: d.timestamp || 0,
+                        modulo: 'Seguridad / Sesiones',
+                        accion: 'Inicio de Sesión',
+                        usuario: d.nombre || d.email || 'Desconocido',
+                        detalle: `Acceso autorizado al sistema desde el correo: ${d.email || 'N/A'}`
+                    });
+                });
+
+                // 2. Auditoría de Inventario (Creaciones, Ediciones y Bajas)
                 const snapCenso = await getDocs(collection(db, "censo_institucional"));
                 snapCenso.forEach(docSnap => {
                     const d = docSnap.data();
-                    const fechaCreacion = d.auditoria?.timestamp ? new Date(d.auditoria.timestamp).toLocaleString() : 'N/A';
+                    const timestampCreacion = d.auditoria?.timestamp || d.createdAt || 0;
+                    const fechaCreacion = timestampCreacion ? new Date(timestampCreacion).toLocaleString() : 'N/A';
                     
                     logs.push({
                         fecha: fechaCreacion,
-                        timestamp: d.auditoria?.timestamp || 0,
+                        timestamp: timestampCreacion,
                         modulo: 'Inventario de Existencias',
                         accion: d.createdAt ? 'Creación de Lote' : 'Actualización de Lote',
-                        usuario: d.auditoria?.name || d.registra || 'Desconocido',
+                        usuario: d.auditoria?.nombre || d.registra || 'Desconocido',
                         detalle: `Repositorio: ${d.repositorio} | Fecha ejecución: ${d.fecha} | Total Real: ${d.totalReal}`
                     });
+
+                    if (d.auditoriaEdicion) {
+                        const fechaEdicion = new Date(d.auditoriaEdicion.timestamp).toLocaleString();
+                        logs.push({
+                            fecha: fechaEdicion,
+                            timestamp: d.auditoriaEdicion.timestamp,
+                            modulo: 'Inventario de Existencias',
+                            accion: 'Edición de Lote',
+                            usuario: d.auditoriaEdicion.nombre || 'Desconocido',
+                            detalle: `Se modificó el lote del repositorio: ${d.repositorio}`
+                        });
+                    }
 
                     if (d.activo === false && d.auditoriaEliminacion) {
                         const fechaEliminacion = d.auditoriaEliminacion.timestamp ? new Date(d.auditoriaEliminacion.timestamp).toLocaleString() : 'N/A';
@@ -1703,14 +1756,16 @@
                     }
                 });
 
+                // 3. Auditoría de Reingresos (Creaciones y Bajas)
                 const snapReingresos = await getDocs(collection(db, "reingresos"));
                 snapReingresos.forEach(docSnap => {
                     const d = docSnap.data();
-                    const fechaCreacion = d.auditoria?.timestamp ? new Date(d.auditoria.timestamp).toLocaleString() : (d.createdAt ? new Date(d.createdAt).toLocaleString() : 'N/A');
+                    const timestampReg = d.auditoria?.timestamp || d.createdAt || 0;
+                    const fechaCreacion = timestampReg ? new Date(timestampReg).toLocaleString() : 'N/A';
                     
                     logs.push({
                         fecha: fechaCreacion,
-                        timestamp: d.auditoria?.timestamp || d.createdAt || 0,
+                        timestamp: timestampReg,
                         modulo: 'Módulo Reingresos',
                         accion: 'Registro de Reingreso',
                         usuario: d.auditoria?.nombre || d.entregado || 'Desconocido',
@@ -1741,7 +1796,8 @@
                 logs.forEach(l => {
                     let badgeColor = 'bg-success';
                     if (l.accion.includes('Eliminación')) badgeColor = 'bg-danger';
-                    if (l.accion.includes('Actualización')) badgeColor = 'bg-warning text-dark';
+                    if (l.accion.includes('Actualización') || l.accion.includes('Edición')) badgeColor = 'bg-warning text-dark';
+                    if (l.accion.includes('Inicio de Sesión')) badgeColor = 'bg-info text-dark';
 
                     const tr = `<tr>
                         <td><small>${l.fecha}</small></td>
@@ -1887,6 +1943,8 @@
 
             try {
                 const correlativo = await obtenerSiguienteCorrelativoReingreso();
+                const currentUserObj = auth.currentUser;
+                const currentUserName = currentUserObj ? (currentUserObj.displayName ? normalizarTexto(currentUserObj.displayName) : normalizarTexto(currentUserObj.email.split('@')[0])) : 'DESCONOCIDO';
 
                 const datos = {
                     correlativo,
@@ -1898,8 +1956,8 @@
                     createdAt: Date.now(),
                     activo: true,
                     auditoria: {
-                        uid: auth.currentUser?.uid || null,
-                        nombre: auth.currentUser?.displayName ? normalizarTexto(auth.currentUser.displayName) : (auth.currentUser?.email || 'desconocido'),
+                        uid: currentUserObj?.uid || null,
+                        nombre: currentUserName,
                         timestamp: Date.now()
                     }
                 };
@@ -1936,11 +1994,14 @@
             if (!confirmacion.isConfirmed) return;
 
             try {
+                const currentUserObj = auth.currentUser;
+                const currentUserName = currentUserObj ? (currentUserObj.displayName ? normalizarTexto(currentUserObj.displayName) : normalizarTexto(currentUserObj.email.split('@')[0])) : 'DESCONOCIDO';
+
                 await updateDoc(doc(db, "reingresos", id), {
                     activo: false,
                     auditoriaEliminacion: {
-                        uid: auth.currentUser?.uid || null,
-                        nombre: auth.currentUser?.displayName ? normalizarTexto(auth.currentUser.displayName) : (auth.currentUser?.email || 'desconocido'),
+                        uid: currentUserObj?.uid || null,
+                        nombre: currentUserName,
                         timestamp: Date.now()
                     }
                 });
