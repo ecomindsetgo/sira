@@ -3237,21 +3237,21 @@ window.generarPDFMicroformasInstitucional = async function() {
                 : 'N/A'
         );
 
-        sumaPaquetes += Number(item.cantPaquetes) || 0;
-        sumaFolios += Number(item.folios) || 0;
-        sumaImagenes += Number(item.imagenes) || 0;
-        sumaRegistros += Number(item.registros) || 0;
-        sumaExpedientes += Number(item.expedientes) || 0;
+        sumaPaquetes += String(item.cantPaquetes) || 0;
+        sumaFolios += String(item.folios) || 0;
+        sumaImagenes += String(item.imagenes) || 0;
+        sumaRegistros += String(item.registros) || 0;
+        sumaExpedientes += String(item.expedientes) || 0;
 
         return [
             item.bloque ?? 'N/A',
             textoRango,
-            Number(item.cantPaquetes) || 0,
+            String(item.cantPaquetes) || 0,
             item.juzgado || 'N/A',
-            Number(item.folios) || 0,
-            Number(item.imagenes) || 0,
-            Number(item.registros) || 0,
-            Number(item.expedientes) || 0,
+            String(item.folios) || 0,
+            String(item.imagenes) || 0,
+            String(item.registros) || 0,
+            String(item.expedientes) || 0,
             item.mes || 'N/A',
             fIni,
             fFin,
