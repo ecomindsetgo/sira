@@ -680,7 +680,7 @@
                             <img src="https://ecomindsetgo.github.io/saamir/LOGO%20LPMD.png" alt="Logo LPMD" style="max-height: 70px; object-fit: contain;" id="img-logo-lpmd-render" onerror="this.src='LOGO LPMD.png'">
                         </div>
                         <h6 class="fw-bold text-dark m-0">CORTE SUPERIOR DE JUSTICIA DEL SANTA</h6>
-                        <p class="text-muted small m-0">Área de Apoyo Administrativo - Línea de Producción de Microformas Digitales</p>
+                        <p class="text-muted small m-0">Archivo Desconcentrado - Línea de Producción de Microformas Digitales</p>
                         <h5 class="fw-bold text-primary mt-2" style="letter-spacing: 0.5px;">CONTROL DE PRODUCCIÓN DE MICROFORMAS DIGITALES</h5>
                     </div>
 
@@ -1039,11 +1039,11 @@
                             </div>
                             <div class="col-12 col-md-3">
                                 <label class="form-label small fw-bold">Paquete Desde</label>
-                                <input type="number" class="form-control form-control-sm" id="mf-paquete-desde" required placeholder="Ej: 961" oninput="calcularCantidadPaquetesMicroforma()">
+                                <input type="text" class="form-control form-control-sm" id="mf-paquete-desde" required placeholder="Ej: 23-916" oninput="calcularCantidadPaquetesMicroforma()">
                             </div>
                             <div class="col-12 col-md-3">
                                 <label class="form-label small fw-bold">Paquete Hasta</label>
-                                <input type="number" class="form-control form-control-sm" id="mf-paquete-hasta" required placeholder="Ej: 963" oninput="calcularCantidadPaquetesMicroforma()">
+                                <input type="text" class="form-control form-control-sm" id="mf-paquete-hasta" required placeholder="Ej: 23-963" oninput="calcularCantidadPaquetesMicroforma()">
                             </div>
                             <div class="col-12 col-md-3">
                                 <label class="form-label small fw-bold">Cant. Paquetes (Auto)</label>
@@ -1636,12 +1636,22 @@
 
             if (!desdeInput || !hastaInput || !inputCant) return;
 
-            const desde = parseInt(desdeInput.value, 10);
-            const hasta = parseInt(hastaInput.value, 10);
+            // Formato esperado: PREFIJO-NUMERO (Ej: 23-916). Solo el número diferenciador
+            // (después del guion) se usa para calcular la cantidad de paquetes.
+            const regexRango = /^\s*(\d+)-(\d+)\s*$/;
+            const matchDesde = desdeInput.value.match(regexRango);
+            const matchHasta = hastaInput.value.match(regexRango);
 
-            if (!isNaN(desde) && !isNaN(hasta) && hasta >= desde) {
-                const total = (hasta - desde) + 1;
-                inputCant.value = total;
+            if (matchDesde && matchHasta) {
+                const numDesde = parseInt(matchDesde[2], 10);
+                const numHasta = parseInt(matchHasta[2], 10);
+
+                if (!isNaN(numDesde) && !isNaN(numHasta) && numHasta >= numDesde) {
+                    const total = Math.round(numHasta - numDesde) + 1;
+                    inputCant.value = total;
+                } else {
+                    inputCant.value = '';
+                }
             } else {
                 inputCant.value = '';
             }
@@ -3087,7 +3097,7 @@
             doc.setFont("Inter", "bold"); doc.setFontSize(11); doc.setTextColor(40, 40, 40);
             doc.text("CORTE SUPERIOR DE JUSTICIA DEL SANTA", pageWidth / 2, 16, { align: "center" });
             doc.setFontSize(9.5); doc.setFont("Inter", "normal");
-            doc.text("Área de Apoyo Administrativo - Línea de Producción de Microformas Digitales", pageWidth / 2, 21, { align: "center" });
+            doc.text("Archivo Desconcentrado - Línea de Producción de Microformas Digitales", pageWidth / 2, 21, { align: "center" });
 
             doc.setFont("Inter", "bold"); doc.setFontSize(11); doc.setTextColor(128, 0, 0); 
             doc.text("CONTROL DE PRODUCCIÓN DE MICROFORMAS DIGITALES", pageWidth / 2, 27, { align: "center" });
@@ -3167,7 +3177,7 @@
                 body: filas
             });
 
-            let currentY = doc.lastAutoTable.finalY + 15;
+            let currentY = doc.lastAutoTable.finalY + 28;
             if (currentY > 180) { doc.addPage(); currentY = 30; }
 
             doc.setLineWidth(0.3);
@@ -3176,13 +3186,12 @@
 
             currentY += 4;
             doc.setFont("Inter", "bold"); doc.setFontSize(8);
-            doc.text("RESPONSABLE DE LÍNEA DE PRODUCCIÓN", 105, currentY, { align: "center" });
             doc.text("VALIDADO POR JEFATURA", 195, currentY, { align: "center" });
 
             currentY += 4;
             doc.setFont("Inter", "bold"); doc.setFontSize(7.5);
             doc.text(NOMBRE_SUPERVISOR_LPMD, 105, currentY, { align: "center" });
-            doc.text("JEFE DE ARCHIVO DESCONCENTRADO", 195, currentY, { align: "center" });
+            doc.text("RESPONSABLE DE ARCHIVO DESCONCENTRADO", 195, currentY, { align: "center" });
 
             currentY += 3.5;
             doc.setFont("Inter", "normal"); doc.setFontSize(7);
@@ -3192,7 +3201,7 @@
             doc.text("CORTE SUPERIOR DE JUSTICIA DEL SANTA", 105, currentY, { align: "center" });
 
             currentY += 8;
-            const fechaGeneracionMf = new Date().toLocaleString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const fechaGeneracionMf = new Date().toLocaleString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
             doc.setFont("Inter", "italic"); doc.setFontSize(7.5); doc.setTextColor(90, 90, 90);
             doc.text(`Fecha de creación / impresión: ${fechaGeneracionMf}`, pageWidth / 2, currentY, { align: "center" });
 
@@ -3279,7 +3288,7 @@
             currentY = doc.lastAutoTable.finalY + 12;
             if (currentY > 270) { doc.addPage(); currentY = 30; }
 
-            const fechaGeneracion = new Date().toLocaleString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const fechaGeneracion = new Date().toLocaleString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
             doc.setFont("Inter", "italic"); doc.setFontSize(7.5); doc.setTextColor(90, 90, 90);
             doc.text(`Fecha de creación / impresión: ${fechaGeneracion}`, pageWidth / 2, currentY, { align: "center" });
 
