@@ -1856,7 +1856,10 @@
             if (!confirmacion.isConfirmed) return;
 
             try {
-                await updateDoc(doc(db, "control_microformas", id), { activo: false });
+                await updateDoc(doc(db, "control_microformas", id), { 
+                    activo: false,
+                    auditoriaEliminacion: { nombre: currentUserName, timestamp: Date.now() }
+                });
                 Swal.fire({ icon: 'success', title: 'Bloque eliminado', timer: 1500, showConfirmButton: false });
                 await cargarMicroformasDesdeCloud();
             } catch (e) {
@@ -2090,12 +2093,7 @@
                 totalTeorico: parseInt(document.getElementById('calc-total-teorico').innerText, 10),
                 totalFaltantes: parseInt(document.getElementById('calc-total-faltantes').innerText, 10),
                 totalReal: parseInt(document.getElementById('calc-total-real').innerText, 10),
-                matrizRangos: [...listaRangosCenso],
-                auditoria: {
-                    uid: currentUserObj?.uid || null,
-                    nombre: currentUserName,
-                    timestamp: Date.now()
-                }
+                matrizRangos: [...listaRangosCenso]
             };
 
             const esEdicion = !!idLoteEnEdicion;
@@ -2111,6 +2109,11 @@
                 } else {
                     consolidadoLote.createdAt = Date.now();
                     consolidadoLote.activo = true;
+                    consolidadoLote.auditoria = {
+                        uid: currentUserObj?.uid || null,
+                        nombre: currentUserName,
+                        timestamp: Date.now()
+                    };
                     await addDoc(collection(db, "censo_institucional"), consolidadoLote);
                 }
 
@@ -2326,6 +2329,7 @@
                 if(selectUsuario) selectUsuario.innerHTML = '<option value="">Todos los usuarios</option>';
                 const setUsuariosUnicos = new Set();
 
+                // 1. Logins
                 try {
                     const snapLogins = await getDocs(collection(db, "auditoria_logins"));
                     snapLogins.forEach(docSnap => {
@@ -2345,6 +2349,7 @@
                     });
                 } catch(err) { console.warn(err); }
 
+                // 2. Inventarios (Censo Institucional)
                 try {
                     const snapCenso = await getDocs(collection(db, "censo_institucional"));
                     snapCenso.forEach(docSnap => {
@@ -2393,6 +2398,7 @@
                     });
                 } catch(err) { console.warn(err); }
 
+                // 3. Reingresos
                 try {
                     const snapReingresos = await getDocs(collection(db, "reingresos"));
                     snapReingresos.forEach(docSnap => {
@@ -2441,22 +2447,59 @@
                     });
                 } catch(err) { console.warn(err); }
 
+                // 4. Control de Microformas
                 try {
                     const snapMicro = await getDocs(collection(db, "control_microformas"));
                     snapMicro.forEach(docSnap => {
                         const d = docSnap.data();
-                        const ts = d.timestamp || d.auditoriaCreacion?.timestamp || 0;
-                        const userMicro = d.auditoriaEdicion?.nombre || d.auditoriaCreacion?.nombre || 'ALFREDO CRUZADO';
-                        setUsuariosUnicos.add(userMicro);
-                        listaLogsAuditoria.push({
-                            fechaISO: ts ? new Date(ts).toISOString().split('T')[0] : '',
-                            fecha: ts ? new Date(ts).toLocaleString() : 'N/A',
-                            timestamp: ts,
-                            modulo: 'Control Microformas',
-                            accion: d.auditoriaEdicion ? 'Actualización de Lote' : 'Creación de Lote',
-                            usuario: userMicro,
-                            detalle: `Bloque N° ${d.bloque} | Rango: ${d.rango} | Juzgado: ${d.juzgado}`
-                        });
+                        
+                        // Creación
+                        const tsCreacion = d.auditoriaCreacion?.timestamp || d.timestamp || 0;
+                        const userCreacionMicro = d.auditoriaCreacion?.nombre || 'ALFREDO CRUZADO';
+                        if (tsCreacion) {
+                            setUsuariosUnicos.add(userCreacionMicro);
+                            listaLogsAuditoria.push({
+                                fechaISO: new Date(tsCreacion).toISOString().split('T')[0],
+                                fecha: new Date(tsCreacion).toLocaleString(),
+                                timestamp: tsCreacion,
+                                modulo: 'Control Microformas',
+                                accion: 'Creación de Lote',
+                                usuario: userCreacionMicro,
+                                detalle: `Bloque N° ${d.bloque} | Rango: ${d.rango} | Juzgado: ${d.juzgado}`
+                            });
+                        }
+
+                        // Edición
+                        if (d.auditoriaEdicion) {
+                            const tsEdicion = d.auditoriaEdicion.timestamp || 0;
+                            const userEdMicro = d.auditoriaEdicion.nombre || 'ALFREDO CRUZADO';
+                            setUsuariosUnicos.add(userEdMicro);
+                            listaLogsAuditoria.push({
+                                fechaISO: tsEdicion ? new Date(tsEdicion).toISOString().split('T')[0] : '',
+                                fecha: tsEdicion ? new Date(tsEdicion).toLocaleString() : 'N/A',
+                                timestamp: tsEdicion,
+                                modulo: 'Control Microformas',
+                                accion: 'Edición de Lote',
+                                usuario: userEdMicro,
+                                detalle: `Se modificó el Bloque N° ${d.bloque} (${d.juzgado})`
+                            });
+                        }
+
+                        // Eliminación / Baja
+                        if (d.activo === false && d.auditoriaEliminacion) {
+                            const tsEliminacion = d.auditoriaEliminacion.timestamp || 0;
+                            const userDelMicro = d.auditoriaEliminacion.nombre || 'ALFREDO CRUZADO';
+                            setUsuariosUnicos.add(userDelMicro);
+                            listaLogsAuditoria.push({
+                                fechaISO: tsEliminacion ? new Date(tsEliminacion).toISOString().split('T')[0] : '',
+                                fecha: tsEliminacion ? new Date(tsEliminacion).toLocaleString() : 'N/A',
+                                timestamp: tsEliminacion,
+                                modulo: 'Control Microformas',
+                                accion: 'Eliminación',
+                                usuario: userDelMicro,
+                                detalle: `Se dio de baja al Bloque N° ${d.bloque} (${d.juzgado})`
+                            });
+                        }
                     });
                 } catch(err) { console.warn(err); }
 
