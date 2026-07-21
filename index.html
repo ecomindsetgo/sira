@@ -378,6 +378,8 @@
                     <i class="bi bi-arrow-return-left"></i> Reingresos
                 </a>
                 <a class="nav-link" data-view="view-consultas-reingresos" onclick="switchView('view-consultas-reingresos', 'Consultar Historial de Reingresos')"><i class="bi bi-search"></i> Consultar Reingresos</a>
+                <a class="nav-link" href="#" data-view="view-traslados" onclick="window.iniciarNuevoTraslado()"><i class="bi bi-truck"></i> Formato de Traslado</a>
+                <a class="nav-link" data-view="view-consultas-traslados" onclick="switchView('view-consultas-traslados', 'Consultar Historial de Traslados')"><i class="bi bi-search"></i> Consultar Traslados</a>
                 <a class="nav-link" id="menu-link-microformas" href="#" onclick="switchView('view-microformas', 'Control de Producción de Microformas')" style="display: none;">
                     <i class="bi bi-file-earmark-spreadsheet-fill"></i> Control Microformas
                 </a>
@@ -475,6 +477,60 @@
                     </tr>
                 </thead>
                 <tbody id="tabla-historial-reingresos">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- SECCIÓN DE CONSULTAS DE TRASLADOS -->
+<section id="view-consultas-traslados" class="view-section">
+    <div class="card p-3 p-md-4 border-0 shadow-sm mb-3">
+        <h6 class="form-section-title"><i class="bi bi-funnel me-2"></i>Filtros de Búsqueda de Traslados</h6>
+        <div class="row g-3">
+            <div class="col-12 col-md-4">
+                <label class="form-label small">Entregado por</label>
+                <select class="form-select form-select-sm" id="filtro-tr-entregado" onchange="filtrarHistorialTraslados()">
+                    <option value="">Todos</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-4">
+                <label class="form-label small">Fecha</label>
+                <input type="date" class="form-control form-control-sm" id="filtro-tr-fecha" onchange="filtrarHistorialTraslados()">
+            </div>
+            <div class="col-12 col-md-4">
+                <label class="form-label small">Búsqueda libre</label>
+                <input type="text" id="busqueda-traslados" class="form-control form-control-sm"
+                       placeholder="🔍 Paquete, motivo, repositorio..."
+                       onkeyup="filtrarHistorialTraslados()">
+            </div>
+        </div>
+        <div class="text-end mt-2">
+            <button class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('filtro-tr-entregado').value='';document.getElementById('filtro-tr-fecha').value='';document.getElementById('busqueda-traslados').value='';filtrarHistorialTraslados()">
+                <i class="bi bi-x-circle"></i> Limpiar filtros
+            </button>
+        </div>
+    </div>
+    <div class="card p-3 p-md-4 border-0 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold m-0 text-dark">
+                <i class="bi bi-search me-2"></i>Consulta de Historial de Traslados
+            </h6>
+            <button class="btn btn-primary btn-sm" onclick="cargarHistorialTraslados()">
+                <i class="bi bi-arrow-clockwise"></i> Actualizar
+            </button>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle border" style="font-size: 0.85rem;">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Entregado por</th>
+                        <th>Total Paquetes</th>
+                        <th class="text-end">Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-historial-traslados">
                 </tbody>
             </table>
         </div>
@@ -862,6 +918,54 @@
                 </div>
             </section>
 
+            <!-- MÓDULO FORMATO DE TRASLADO -->
+            <section id="view-traslados" class="view-section">
+                <div class="card p-3 p-md-4 mb-4">
+                    <h6 class="form-section-title"><i class="bi bi-truck me-2"></i>Datos de Registro de Traslado</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small fw-bold">Fecha</label>
+                            <input type="date" class="form-control bg-light" id="tr-fecha">
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small fw-bold">Entregado por</label>
+                            <input type="text" class="form-control bg-light fw-bold text-dark" id="tr-entregado" readonly style="cursor: not-allowed;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card p-3 p-md-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <h6 class="form-section-title m-0"><i class="bi bi-box-seam me-2"></i>Detalle de Paquetes a Trasladar</h6>
+                        <button class="btn btn-dark btn-sm" onclick="agregarFilaTraslado()">+ Agregar Paquete</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle" id="tabla-traslados">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Ítem</th>
+                                    <th>N° Paquete</th>
+                                    <th>Juzgado</th>
+                                    <th>Repositorio de Salida</th>
+                                    <th>Repositorio de Ingreso</th>
+                                    <th>Motivo de traslado</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="mt-3 text-end">
+                        <span class="fw-bold text-secondary">Total de paquetes trasladados: <span id="lbl-total-traslados" class="text-primary fs-5">0</span></span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end mt-4 gap-2 flex-wrap">
+                    <button class="btn btn-danger px-4 btn-ancho-movil" onclick="generarReporteTrasladoPDF()"><i class="bi bi-file-pdf me-2"></i>Generar PDF</button>
+                    <button class="btn btn-primary px-4 fw-bold btn-ancho-movil" id="btn-guardar-traslado" onclick="guardarTraslado()"><i class="bi bi-cloud-upload me-2"></i>Guardar Registro</button>
+                </div>
+            </section>
+
             <!-- CONSULTAS -->
             <section id="view-consultas" class="view-section">
                 <div class="card p-3 p-md-4 border-0 shadow-sm mb-4">
@@ -971,6 +1075,7 @@
                                 <option value="Edición de Lote">Edición de Lote</option>
                                 <option value="Eliminación">Eliminación / Baja</option>
                                 <option value="Registro de Reingreso">Registro de Reingreso</option>
+                                <option value="Registro de Traslado">Registro de Traslado</option>
                             </select>
                         </div>
                         <div class="col-12 col-md-3">
@@ -1323,12 +1428,20 @@
             }
 
             document.getElementById('btn-guardar-reingreso')?.toggleAttribute('disabled', !puedeReingresos);
+            document.getElementById('btn-guardar-traslado')?.toggleAttribute('disabled', !puedeReingresos);
             
             const btnAgregarExpediente = document.querySelector('button[onclick="agregarFilaReingreso()"]');
             if (btnAgregarExpediente) {
                 btnAgregarExpediente.disabled = !puedeReingresos;
                 btnAgregarExpediente.style.pointerEvents = puedeReingresos ? 'auto' : 'none';
                 btnAgregarExpediente.classList.toggle('opacity-50', !puedeReingresos);
+            }
+
+            const btnAgregarTraslado = document.querySelector('button[onclick="agregarFilaTraslado()"]');
+            if (btnAgregarTraslado) {
+                btnAgregarTraslado.disabled = !puedeReingresos;
+                btnAgregarTraslado.style.pointerEvents = puedeReingresos ? 'auto' : 'none';
+                btnAgregarTraslado.classList.toggle('opacity-50', !puedeReingresos);
             }
 
             const btnGenerarPDF = document.querySelector('button[onclick="generarReporteReingresoPDF()"]');
@@ -1338,7 +1451,15 @@
                 btnGenerarPDF.classList.toggle('opacity-50', !puedeReingresos);
             }
 
+            const btnGenerarPDFTraslado = document.querySelector('button[onclick="generarReporteTrasladoPDF()"]');
+            if (btnGenerarPDFTraslado) {
+                btnGenerarPDFTraslado.disabled = !puedeReingresos;
+                btnGenerarPDFTraslado.style.pointerEvents = puedeReingresos ? 'auto' : 'none';
+                btnGenerarPDFTraslado.classList.toggle('opacity-50', !puedeReingresos);
+            }
+
             document.querySelectorAll('#view-reingresos input, #view-reingresos select').forEach(el => el.disabled = !puedeReingresos);
+            document.querySelectorAll('#view-traslados input, #view-traslados select').forEach(el => el.disabled = !puedeReingresos);
             document.getElementById('form-inventario')?.querySelectorAll('input, select, button[type=submit]').forEach(el => el.disabled = !puedeInventario);
 
             const btnAgregarRango = document.querySelector('button[onclick="abrirModalRango()"]');
@@ -1378,9 +1499,11 @@
         let listaRangosCenso = [];    
         let listaFaltantesModal = []; 
         let baseDatosReingresos = [];
+        let baseDatosTraslados = [];
         let baseDatosMicroformas = [];
         let listaLogsAuditoria = [];
         let idReingresoEnEdicion = null;
+        let idTrasladoEnEdicion = null;
         let idMicroformaEnEdicion = null;
         let modalInstance = null;
         let modalMicroformaInstance = null;
@@ -1457,6 +1580,16 @@
             });
         }
 
+        function inicializarSelectsTraslados() {
+            const fEntregadoTr = document.getElementById('filtro-tr-entregado');
+            if (fEntregadoTr) {
+                fEntregadoTr.innerHTML = '<option value="">Todos</option>';
+                dataMaestra.personal.forEach(p => {
+                    fEntregadoTr.innerHTML += `<option value="${p}">${p}</option>`;
+                });
+            }
+        }
+
         function resetFormularioReingreso() {
             idReingresoEnEdicion = null;
             const fFecha = document.getElementById('re-fecha');
@@ -1472,9 +1605,26 @@
             if (btnGuardar) btnGuardar.innerHTML = '<i class="bi bi-cloud-upload me-2"></i>Guardar Registro';
         }
 
+        function resetFormularioTraslado() {
+            idTrasladoEnEdicion = null;
+            const fFecha = document.getElementById('tr-fecha');
+            const tbody = document.querySelector('#tabla-traslados tbody');
+            const btnGuardar = document.getElementById('btn-guardar-traslado');
+
+            if (fFecha) fFecha.valueAsDate = new Date();
+            if (tbody) tbody.innerHTML = '';
+            if (btnGuardar) btnGuardar.innerHTML = '<i class="bi bi-cloud-upload me-2"></i>Guardar Registro';
+            actualizarTotalTraslados();
+        }
+
         window.iniciarNuevoReingreso = function() {
             resetFormularioReingreso();
             switchView('view-reingresos', 'Módulo Reingresos');
+        };
+
+        window.iniciarNuevoTraslado = function() {
+            resetFormularioTraslado();
+            switchView('view-traslados', 'Módulo Formato de Traslado');
         };
 
         window.toggleMenuMovil = function() {
@@ -1519,6 +1669,10 @@
             if (viewId === 'view-consultas-reingresos') {
                 cargarHistorialReingresos();
             }
+
+            if (viewId === 'view-consultas-traslados') {
+                cargarHistorialTraslados();
+            }
         }
 
         document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -1550,6 +1704,9 @@
                 const campoEntregado = document.getElementById('re-entregado');
                 if (campoEntregado) campoEntregado.value = userTitle;
 
+                const campoEntregadoTr = document.getElementById('tr-entregado');
+                if (campoEntregadoTr) campoEntregadoTr.value = userTitle;
+
                 document.getElementById('perf-email').value = user.email || '';
                 document.getElementById('perf-nombre').value = user.displayName || '';
                 const formClave = document.getElementById('form-perfil-clave');
@@ -1560,10 +1717,13 @@
                 sincronizarUsuarioEnFirestore(user, userTitle);
                 registrarInicioSesionEnCloud(user, userTitle);
                 inicializarSelectsReingresos();
+                inicializarSelectsTraslados();
                 resetFormularioReingreso();
+                resetFormularioTraslado();
                 
                 await cargarInventariosDesdeCloud().catch(err => console.error(err));
                 await cargarHistorialReingresosParaDashboard().catch(err => console.error(err));
+                await cargarHistorialTrasladosParaDashboard().catch(err => console.error(err));
                 await cargarMicroformasDesdeCloud().catch(err => console.error(err));
             } else {
                 document.getElementById('app-container').style.display = 'none';
@@ -1589,6 +1749,9 @@
                 
                 const campoEntregado = document.getElementById('re-entregado');
                 if (campoEntregado) campoEntregado.value = nuevoNombre;
+
+                const campoEntregadoTr = document.getElementById('tr-entregado');
+                if (campoEntregadoTr) campoEntregadoTr.value = nuevoNombre;
                 
                 cargarDataMaestra(nuevoNombre);
                 aplicarPermisos(nuevoNombre);
@@ -2308,6 +2471,20 @@
             }
         }
 
+        async function cargarHistorialTrasladosParaDashboard() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "traslados"));
+                baseDatosTraslados = [];
+                querySnapshot.forEach((doc) => {
+                    const data = { id: doc.id, ...doc.data() };
+                    if (data.activo !== false) baseDatosTraslados.push(data);
+                });
+                baseDatosTraslados.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
         function actualizarDashboardGlobal() {
             let sT = 0, sF = 0, sR = 0;
             baseDatosInventario.forEach(lote => { 
@@ -2582,6 +2759,55 @@
                                 accion: 'Eliminación',
                                 usuario: userDelRe,
                                 detalle: `Se dio de baja al reingreso N° ${d.correlativo} (${d.local})`
+                            });
+                        }
+                    });
+                } catch(err) { console.warn(err); }
+
+                // 3.1 Traslados
+                try {
+                    const snapTraslados = await getDocs(collection(db, "traslados"));
+                    snapTraslados.forEach(docSnap => {
+                        const d = docSnap.data();
+                        const timestampReg = d.auditoria?.timestamp || d.createdAt || 0;
+                        const userTr = d.auditoria?.nombre || d.entregado || 'Desconocido';
+                        setUsuariosUnicos.add(userTr);
+                        
+                        listaLogsAuditoria.push({
+                            fechaISO: timestampReg ? new Date(timestampReg).toISOString().split('T')[0] : '',
+                            fecha: timestampReg ? new Date(timestampReg).toLocaleString() : 'N/A',
+                            timestamp: timestampReg,
+                            modulo: 'Formato de Traslado',
+                            accion: 'Registro de Traslado',
+                            usuario: userTr,
+                            detalle: `Correlativo N° ${d.correlativo} | Total Paquetes: ${d.paquetes ? d.paquetes.length : 0}`
+                        });
+
+                        if (d.auditoriaEdicion) {
+                            const userEdTr = d.auditoriaEdicion.nombre || 'Desconocido';
+                            setUsuariosUnicos.add(userEdTr);
+                            listaLogsAuditoria.push({
+                                fechaISO: d.auditoriaEdicion.timestamp ? new Date(d.auditoriaEdicion.timestamp).toISOString().split('T')[0] : '',
+                                fecha: d.auditoriaEdicion.timestamp ? new Date(d.auditoriaEdicion.timestamp).toLocaleString() : 'N/A',
+                                timestamp: d.auditoriaEdicion.timestamp || 0,
+                                modulo: 'Formato de Traslado',
+                                accion: 'Edición de Lote',
+                                usuario: userEdTr,
+                                detalle: `Se modificó el traslado N° ${d.correlativo}`
+                            });
+                        }
+
+                        if (d.activo === false && d.auditoriaEliminacion) {
+                            const userDelTr = d.auditoriaEliminacion.nombre || 'Desconocido';
+                            setUsuariosUnicos.add(userDelTr);
+                            listaLogsAuditoria.push({
+                                fechaISO: d.auditoriaEliminacion.timestamp ? new Date(d.auditoriaEliminacion.timestamp).toISOString().split('T')[0] : '',
+                                fecha: d.auditoriaEliminacion.timestamp ? new Date(d.auditoriaEliminacion.timestamp).toLocaleString() : 'N/A',
+                                timestamp: d.auditoriaEliminacion.timestamp || 0,
+                                modulo: 'Formato de Traslado',
+                                accion: 'Eliminación',
+                                usuario: userDelTr,
+                                detalle: `Se dio de baja al traslado N° ${d.correlativo}`
                             });
                         }
                     });
@@ -2923,6 +3149,69 @@
             }
         };
 
+        window.guardarTraslado = async function() {
+            const paquetes = Array.from(document.querySelectorAll("#tabla-traslados tbody tr")).map(tr => {
+                const inputs = tr.querySelectorAll('input, select');
+                return { 
+                    paquete: inputs[0].value, 
+                    juzgado: inputs[1].value, 
+                    repoSalida: inputs[2].value, 
+                    repoIngreso: inputs[3].value, 
+                    motivo: inputs[4].value 
+                };
+            });
+
+            if (paquetes.length === 0) {
+                Swal.fire('Atención', 'Agregue al menos un paquete antes de guardar el traslado.', 'warning');
+                return;
+            }
+
+            try {
+                const currentUserObj = auth.currentUser;
+                const currentUserName = currentUserObj ? (currentUserObj.displayName ? normalizarTexto(currentUserObj.displayName) : normalizarTexto(currentUserObj.email.split('@')[0])) : 'DESCONOCIDO';
+
+                if (idTrasladoEnEdicion) {
+                    const datosActualizados = {
+                        fecha: document.getElementById('tr-fecha').value,
+                        entregado: document.getElementById('tr-entregado').value,
+                        paquetes,
+                        auditoriaEdicion: {
+                            uid: currentUserObj?.uid || null,
+                            nombre: currentUserName,
+                            timestamp: Date.now()
+                        }
+                    };
+
+                    await updateDoc(doc(db, "traslados", idTrasladoEnEdicion), datosActualizados);
+                    Swal.fire({ icon: 'success', title: 'Traslado Actualizado', text: 'Los cambios se guardaron correctamente.' });
+                } else {
+                    const correlativo = await obtenerSiguienteCorrelativoTraslado();
+                    const datos = {
+                        correlativo,
+                        fecha: document.getElementById('tr-fecha').value,
+                        entregado: document.getElementById('tr-entregado').value,
+                        paquetes,
+                        createdAt: Date.now(),
+                        activo: true,
+                        auditoria: {
+                            uid: currentUserObj?.uid || null,
+                            nombre: currentUserName,
+                            timestamp: Date.now()
+                        }
+                    };
+
+                    await addDoc(collection(db, "traslados"), datos);
+                    Swal.fire({ icon: 'success', title: 'Formato de traslado guardado con éxito' });
+                }
+
+                resetFormularioTraslado();
+                await cargarHistorialTrasladosParaDashboard();
+                switchView('view-consultas-traslados', 'Consultar Historial de Traslados');
+            } catch (e) {
+                Swal.fire('Error', e.message, 'error');
+            }
+        };
+
         window.editarReingreso = function(id) {
             const registro = baseDatosReingresos.find(r => r.id === id);
             if (!registro) return;
@@ -2964,8 +3253,56 @@
             switchView('view-reingresos', `Editando Reingreso N° ${registro.correlativo}`);
         };
 
+        window.editarTraslado = function(id) {
+            const registro = baseDatosTraslados.find(r => r.id === id);
+            if (!registro) return;
+
+            idTrasladoEnEdicion = id;
+            document.getElementById('tr-fecha').value = registro.fecha || '';
+            document.getElementById('tr-entregado').value = registro.entregado || '';
+
+            const tbody = document.querySelector('#tabla-traslados tbody');
+            tbody.innerHTML = '';
+
+            if (registro.paquetes && Array.isArray(registro.paquetes)) {
+                registro.paquetes.forEach((e, idx) => {
+                    const repoSalidaOpts = repositorios.map(r => `<option value="${r}" ${e.repoSalida === r ? 'selected' : ''}>${r}</option>`).join('');
+                    const repoIngresoOpts = repositorios.map(r => `<option value="${r}" ${e.repoIngreso === r ? 'selected' : ''}>${r}</option>`).join('');
+
+                    const fila = `<tr>
+                        <td class="text-center fw-bold item-nro">${idx + 1}</td>
+                        <td><input type="text" class="form-control form-control-sm" placeholder="N° Paquete" value="${e.paquete || ''}"></td>
+                        <td><input type="text" class="form-control form-control-sm" placeholder="Juzgado" value="${e.juzgado || ''}"></td>
+                        <td><select class="form-select form-select-sm"><option value="">Seleccione...</option>${repoSalidaOpts}</select></td>
+                        <td><select class="form-select form-select-sm"><option value="">Seleccione...</option>${repoIngresoOpts}</select></td>
+                        <td><input type="text" class="form-control form-control-sm" placeholder="Motivo" value="${e.motivo || ''}"></td>
+                        <td class="text-center">
+                            <button class="btn btn-outline-danger btn-sm" onclick="this.parentElement.parentElement.remove(); reindexarTraslados();">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+                    tbody.insertAdjacentHTML('beforeend', fila);
+                });
+            }
+
+            document.getElementById('btn-guardar-traslado').innerHTML = '<i class="bi bi-cloud-upload me-2"></i>Guardar Cambios';
+            actualizarTotalTraslados();
+            switchView('view-traslados', `Editando Traslado N° ${registro.correlativo}`);
+        };
+
         async function obtenerSiguienteCorrelativoReingreso() {
             const snapshotActual = await getDocs(collection(db, "reingresos"));
+            let maxCorrelativo = 0;
+            snapshotActual.forEach((docSnap) => {
+                const c = Number(docSnap.data().correlativo) || 0;
+                if (c > maxCorrelativo) maxCorrelativo = c;
+            });
+            return maxCorrelativo + 1;
+        }
+
+        async function obtenerSiguienteCorrelativoTraslado() {
+            const snapshotActual = await getDocs(collection(db, "traslados"));
             let maxCorrelativo = 0;
             snapshotActual.forEach((docSnap) => {
                 const c = Number(docSnap.data().correlativo) || 0;
@@ -3005,6 +3342,37 @@
             }
         };
 
+        window.eliminarTraslado = async function(id) {
+            const registro = baseDatosTraslados.find(r => r.id === id);
+            const confirmacion = await Swal.fire({
+                icon: 'warning',
+                title: '¿Eliminar traslado?',
+                text: registro ? `Se eliminará el formato N° ${registro.correlativo}.` : '',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                confirmButtonColor: '#800000'
+            });
+            if (!confirmacion.isConfirmed) return;
+
+            try {
+                const currentUserObj = auth.currentUser;
+                const currentUserName = currentUserObj ? (currentUserObj.displayName ? normalizarTexto(currentUserObj.displayName) : normalizarTexto(currentUserObj.email.split('@')[0])) : 'DESCONOCIDO';
+
+                await updateDoc(doc(db, "traslados", id), {
+                    activo: false,
+                    auditoriaEliminacion: {
+                        uid: currentUserObj?.uid || null,
+                        nombre: currentUserName,
+                        timestamp: Date.now()
+                    }
+                });
+                Swal.fire({ icon: 'success', title: 'Registro eliminado', timer: 1500, showConfirmButton: false });
+                await window.cargarHistorialTraslados();
+            } catch (e) {
+                Swal.fire('Error', e.message, 'error');
+            }
+        };
+
         window.cargarHistorialReingresos = async function() {
             try {
                 const querySnapshot = await getDocs(collection(db, "reingresos"));
@@ -3015,6 +3383,21 @@
                 });
                 baseDatosReingresos.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
                 filtrarHistorialReingresos();
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        window.cargarHistorialTraslados = async function() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "traslados"));
+                baseDatosTraslados = [];
+                querySnapshot.forEach((doc) => {
+                    const data = { id: doc.id, ...doc.data() };
+                    if (data.activo !== false) baseDatosTraslados.push(data);
+                });
+                baseDatosTraslados.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                filtrarHistorialTraslados();
             } catch (error) {
                 console.error(error);
             }
@@ -3036,6 +3419,22 @@
             });
 
             renderTablaHistorialReingresos(filtrados);
+        };
+
+        window.filtrarHistorialTraslados = function() {
+            const fEntregado = document.getElementById('filtro-tr-entregado')?.value || '';
+            const fFecha = document.getElementById('filtro-tr-fecha')?.value || '';
+            const fTexto = (document.getElementById('busqueda-traslados')?.value || '').toLowerCase().trim();
+
+            const filtrados = baseDatosTraslados.filter(r => {
+                const mEntregado = fEntregado === '' || r.entregado === fEntregado;
+                const mFecha = fFecha === '' || r.fecha === fFecha;
+                const mTexto = fTexto === '' || (r.entregado || '').toLowerCase().includes(fTexto) ||
+                    (r.paquetes || []).some(e => (e.paquete || '').toLowerCase().includes(fTexto) || (e.motivo || '').toLowerCase().includes(fTexto) || (e.repoSalida || '').toLowerCase().includes(fTexto) || (e.repoIngreso || '').toLowerCase().includes(fTexto));
+                return mEntregado && mFecha && mTexto;
+            });
+
+            renderTablaHistorialTraslados(filtrados);
         };
 
         function renderTablaHistorialReingresos(registros) {
@@ -3061,6 +3460,35 @@
                             <i class="bi bi-pencil"></i>
                         </button>
                         <button class="btn btn-sm btn-outline-danger py-1 px-2" onclick="window.eliminarReingreso('${data.id}')" title="Eliminar Registro">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>`;
+                tbody.insertAdjacentHTML('beforeend', fila);
+            });
+        }
+
+        function renderTablaHistorialTraslados(registros) {
+            const tbody = document.getElementById('tabla-historial-traslados');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            if (registros.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-3">Sin traslados registrados.</td></tr>`;
+                return;
+            }
+            registros.forEach(data => {
+                const fila = `<tr>
+                    <td>${data.fecha || 'N/A'}</td>
+                    <td>${data.entregado || 'N/A'}</td>
+                    <td>${data.paquetes ? data.paquetes.length : 0}</td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-danger py-1 px-2 me-1" onclick="window.generarPDFTrasladoDesdeRegistro('${data.id}')" title="Ver PDF">
+                            <i class="bi bi-file-pdf"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary py-1 px-2 me-1" onclick="window.editarTraslado('${data.id}')" title="Editar Registro">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger py-1 px-2" onclick="window.eliminarTraslado('${data.id}')" title="Eliminar Registro">
                             <i class="bi bi-trash"></i>
                         </button>
                     </td>
@@ -3152,6 +3580,69 @@
             mostrarModalPreviewPDF(blobUrl, `REINGRESOS_${String(correlativo).padStart(3, '0')}_${fecha}.pdf`);
         };
 
+        async function construirPDFTraslado({ correlativo, fecha, entregado, paquetes }) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = doc.internal.pageSize.getWidth();
+
+            const logoData = await obtenerLogoArchivoBase64();
+            if (logoData) {
+                doc.addImage(logoData, 'PNG', 15, 10, 18, 18);
+            }
+
+            doc.setFont("Inter", "bold"); doc.setTextColor(20, 20, 20); doc.setFontSize(11);
+            doc.text("FORMATO DE TRASLADO DE PAQUETES", pageWidth / 2, 16, { align: "center" });
+
+            doc.setFont("Inter", "bold"); doc.setTextColor(128, 0, 0); doc.setFontSize(9.5);
+            doc.text("SAAMIR - Sistema de Administración de Archivos, Microformas, Inventario y Reportes", pageWidth / 2, 22, { align: "center" });
+
+            doc.setDrawColor(128, 0, 0); doc.setLineWidth(0.4);
+            doc.line(15, 27, pageWidth - 15, 27);
+
+            doc.setFont("Inter", "bold"); doc.setFontSize(9); doc.setTextColor(0, 0, 0);
+            doc.text(`Correlativo (ID): ${String(correlativo).padStart(3, '0')}`, 15, 34);
+            doc.text(`Fecha: ${fecha}`, pageWidth - 15, 34, { align: "right" });
+            doc.text(`Entregado por: ${entregado}`, 15, 40);
+
+            const filasTabla = paquetes.map((e, idx) => [
+                (idx + 1).toString(),
+                e.paquete || '-',
+                e.juzgado || '-',
+                e.repoSalida || '-',
+                e.repoIngreso || '-',
+                e.motivo || '-'
+            ]);
+
+            doc.autoTable({
+                startY: 45,
+                margin: { left: 15, right: 15 },
+                theme: 'grid',
+                head: [['Ítem', 'N° Paquete', 'Juzgado', 'Repositorio de Salida', 'Repositorio de Ingreso', 'Motivo de traslado']],
+                body: filasTabla,
+                headStyles: { fillColor: [128, 0, 0], textColor: [255, 255, 255], fontSize: 8.5, halign: 'center' },
+                styles: { fontSize: 8, font: 'Inter', halign: 'center', cellPadding: 2 }
+            });
+
+            let currentY = doc.lastAutoTable.finalY + 8;
+            doc.setFont("Inter", "bold"); doc.setFontSize(9); doc.setTextColor(0, 0, 0);
+            doc.text(`Total de paquetes trasladados: ${paquetes.length}`, 15, currentY);
+
+            currentY += 25;
+            if (currentY > 255) { doc.addPage(); currentY = 30; }
+
+            doc.setLineWidth(0.3);
+            doc.line(35, currentY, 95, currentY);
+            doc.line(115, currentY, 175, currentY);
+
+            currentY += 4;
+            doc.setFont("Inter", "bold"); doc.setFontSize(8);
+            doc.text(`Entregado por: ${entregado}`, 65, currentY, { align: "center" });
+            doc.text(`Recibido por: ${entregado}`, 145, currentY, { align: "center" });
+
+            const blobUrl = doc.output('bloburl');
+            mostrarModalPreviewPDF(blobUrl, `TRASLADO_${String(correlativo).padStart(3, '0')}_${fecha}.pdf`);
+        }
+
         window.generarReporteReingresoPDF = async function() {
             const expedientes = Array.from(document.querySelectorAll("#tabla-reingresos tbody tr")).map(tr => {
                 const inputs = tr.querySelectorAll('input, select');
@@ -3173,6 +3664,31 @@
             });
         };
 
+        window.generarReporteTrasladoPDF = async function() {
+            const paquetes = Array.from(document.querySelectorAll("#tabla-traslados tbody tr")).map(tr => {
+                const inputs = tr.querySelectorAll('input, select');
+                return { 
+                    paquete: inputs[0].value, 
+                    juzgado: inputs[1].value, 
+                    repoSalida: inputs[2].value, 
+                    repoIngreso: inputs[3].value, 
+                    motivo: inputs[4].value 
+                };
+            });
+
+            if (paquetes.length === 0) {
+                Swal.fire('Atención', 'Agregue al menos un paquete antes de generar el reporte de traslado.', 'warning');
+                return;
+            }
+
+            await construirPDFTraslado({
+                correlativo: idTrasladoEnEdicion ? baseDatosTraslados.find(r => r.id === idTrasladoEnEdicion)?.correlativo : await obtenerSiguienteCorrelativoTraslado(),
+                fecha: document.getElementById('tr-fecha').value,
+                entregado: document.getElementById('tr-entregado').value,
+                paquetes
+            });
+        };
+
         window.generarPDFReingresoDesdeRegistro = async function(id) {
             const registro = baseDatosReingresos.find(r => r.id === id);
             if (!registro) return;
@@ -3183,6 +3699,17 @@
                 local: registro.local,
                 entregado: registro.entregado,
                 expedientes: registro.expedientes || []
+            });
+        };
+
+        window.generarPDFTrasladoDesdeRegistro = async function(id) {
+            const registro = baseDatosTraslados.find(r => r.id === id);
+            if (!registro) return;
+            await construirPDFTraslado({
+                correlativo: registro.correlativo ?? '-',
+                fecha: registro.fecha,
+                entregado: registro.entregado,
+                paquetes: registro.paquetes || []
             });
         };
 
@@ -3542,6 +4069,43 @@ window.generarPDFMicroformasInstitucional = async function() {
                 </td>
             </tr>`;
             tbody.insertAdjacentHTML('beforeend', fila);
+        }
+
+        function agregarFilaTraslado() {
+            const tbody = document.querySelector('#tabla-traslados tbody');
+            const totalActual = tbody.querySelectorAll('tr').length + 1;
+            const repoOpts = ["SÓTANO NCPP", "SAENZ PEÑA", "PADILLA", "DUNAS", "DOMUS"].map(r => `<option value="${r}">${r}</option>`).join('');
+            
+            const fila = `<tr>
+                <td class="text-center fw-bold item-nro">${totalActual}</td>
+                <td><input type="text" class="form-control form-control-sm" placeholder="N° Paquete"></td>
+                <td><input type="text" class="form-control form-control-sm" placeholder="Juzgado"></td>
+                <td><select class="form-select form-select-sm"><option value="">Seleccione...</option>${repoOpts}</select></td>
+                <td><select class="form-select form-select-sm"><option value="">Seleccione...</option>${repoOpts}</select></td>
+                <td><input type="text" class="form-control form-control-sm" placeholder="Motivo"></td>
+                <td class="text-center">
+                    <button class="btn btn-outline-danger btn-sm" onclick="this.parentElement.parentElement.remove(); reindexarTraslados();">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>`;
+            tbody.insertAdjacentHTML('beforeend', fila);
+            actualizarTotalTraslados();
+        }
+
+        function reindexarTraslados() {
+            const filas = document.querySelectorAll('#tabla-traslados tbody tr');
+            filas.forEach((tr, idx) => {
+                const tdItem = tr.querySelector('.item-nro');
+                if (tdItem) tdItem.textContent = idx + 1;
+            });
+            actualizarTotalTraslados();
+        }
+
+        function actualizarTotalTraslados() {
+            const total = document.querySelectorAll('#tabla-traslados tbody tr').length;
+            const lbl = document.getElementById('lbl-total-traslados');
+            if (lbl) lbl.textContent = total;
         }
     </script>
 </body>
