@@ -176,6 +176,34 @@
             display: block;
         }
 
+        /* ESTILOS DE DIFERENCIACIÓN VISUAL DE SECCIONES EN EL DASHBOARD */
+        .seccion-inventario-box {
+            background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
+            border-left: 5px solid var(--sipa-primary);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(128, 0, 0, 0.06);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .seccion-microformas-box {
+            background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+            border-left: 5px solid #3b82f6;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.06);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .seccion-reingresos-box {
+            background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
+            border-left: 5px solid #f59e0b;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.06);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
         /* DISEÑO RESPONSIVO AVANZADO PARA MÓVILES (TABLETS Y CELULARES) */
         .btn-menu-movil {
             display: none;
@@ -465,8 +493,9 @@
                     </button>
                 </div>
 
-                <div class="mb-4">
-                    <h6 class="text-uppercase fw-bold text-muted small mb-3 tracking-wider"><i class="bi bi-box-seam me-1 text-primary"></i> Resumen de Inventario Institucional</h6>
+                <!-- SECCIÓN 1: INVENTARIO INSTITUCIONAL (Diferenciada visualmente) -->
+                <div class="seccion-inventario-box">
+                    <h6 class="text-uppercase fw-bold text-danger small mb-3 tracking-wider"><i class="bi bi-box-seam me-1 text-primary"></i> Resumen de Inventario Institucional</h6>
                     <div class="row g-3">
                         <div class="col-12 col-sm-6 col-xl-3">
                             <div class="card dashboard-card p-3 border-start border-primary border-4">
@@ -523,9 +552,9 @@
                     </div>
                 </div>
 
-                <!-- PRODUCCIÓN DE MICROFORMAS EN EL DASHBOARD GLOBAL -->
-                <div class="mb-4">
-                    <h6 class="text-uppercase fw-bold text-muted small mb-3 tracking-wider"><i class="bi bi-file-earmark-spreadsheet-fill me-1 text-danger"></i> Producción de Microformas Digitales (Acumulado)</h6>
+                <!-- SECCIÓN 2: PRODUCCIÓN DE MICROFORMAS (Diferenciada visualmente) -->
+                <div class="seccion-microformas-box">
+                    <h6 class="text-uppercase fw-bold text-primary small mb-3 tracking-wider"><i class="bi bi-file-earmark-spreadsheet-fill me-1 text-primary"></i> Producción de Microformas Digitales (Acumulado)</h6>
                     <div class="row g-3">
                         <div class="col-12 col-sm-6 col-lg">
                             <div class="card dashboard-card p-3 border-start border-dark border-4">
@@ -595,8 +624,9 @@
                     </div>
                 </div>
 
-                <div class="mb-4">
-                    <h6 class="text-uppercase fw-bold text-muted small mb-3 tracking-wider"><i class="bi bi-arrow-return-left me-1 text-warning"></i> Métricas Operativas de Reingresos</h6>
+                <!-- SECCIÓN 3: MÉTRICAS DE REINGRESOS (Diferenciada visualmente) -->
+                <div class="seccion-reingresos-box">
+                    <h6 class="text-uppercase fw-bold text-warning small mb-3 tracking-wider"><i class="bi bi-arrow-return-left me-1 text-warning"></i> Métricas Operativas de Reingresos</h6>
                     <div class="row g-3">
                         <div class="col-12 col-sm-4">
                             <div class="card dashboard-card p-3 border-start border-warning border-4">
@@ -635,63 +665,6 @@
                                         <i class="bi bi-layers-half"></i>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row g-4">
-                    <div class="col-12">
-                        <div class="card p-3 p-md-4 border-0 shadow-sm">
-                            <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-                                <h6 class="fw-bold text-dark m-0"><i class="bi bi-clock-history me-2 text-primary"></i>Últimos Lotes Consolidados Registrados</h6>
-                                <span class="badge bg-light text-secondary border">Historial reciente</span>
-                            </div>
-                            <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0" style="font-size: 0.9rem;">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Fecha Registro</th>
-                                            <th>Repositorio / Sede</th>
-                                            <th>Cantidad de Rangos</th>
-                                            <th class="text-center">Suma Teórica</th>
-                                            <th class="text-center">Suma Faltantes</th>
-                                            <th class="text-center">Total Físico Real</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="dash-recent-table">
-                                        <tr>
-                                            <td colspan="6" class="text-center text-muted py-4">Sin registros cargados.</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12">
-                        <div class="card p-3 p-md-4 border-0 shadow-sm">
-                            <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-                                <h6 class="fw-bold text-dark m-0"><i class="bi bi-arrow-return-left me-2 text-warning"></i>Últimos Reingresos Registrados</h6>
-                                <span class="badge bg-light text-secondary border">Últimos 5 movimientos</span>
-                            </div>
-                            <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0" style="font-size: 0.9rem;">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Fecha</th>
-                                            <th>Solicitante</th>
-                                            <th>Local / Repositorio</th>
-                                            <th>Entregado por</th>
-                                            <th class="text-center">Cant. Expedientes</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="dash-recent-reingresos-table">
-                                        <tr>
-                                            <td colspan="5" class="text-center text-muted py-4">Sin reingresos registrados.</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
                             </div>
                         </div>
                     </div>
@@ -2249,36 +2222,6 @@
             document.getElementById('dash-reingresos-mes').innerText = reingresosMesCount;
             document.getElementById('dash-reingresos-hoy').innerText = reingresosHoyCount;
             document.getElementById('dash-total-acompanados').innerText = totalAcompanadosCount;
-
-            const recBody = document.getElementById('dash-recent-table');
-            recBody.innerHTML = '';
-            if(baseDatosInventario.length === 0) {
-                recBody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Sin registros consolidados.</td></tr>`;
-            } else {
-                baseDatosInventario.slice(0, 5).forEach(l => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${l.fecha || 'N/A'}</td><td class="fw-bold text-dark">${l.repositorio || 'N/A'}</td><td class="text-center"><span class="badge bg-secondary">${(l.matrizRangos || []).length} tramos</span></td><td class="text-center">${l.totalTeorico ?? 0}</td><td class="text-center text-danger">${l.totalFaltantes ?? 0}</td><td class="text-center fw-bold text-success">${l.totalReal ?? 0}</td>`;
-                    recBody.appendChild(tr);
-                });
-            }
-
-            const recReingresosBody = document.getElementById('dash-recent-reingresos-table');
-            recReingresosBody.innerHTML = '';
-            if(baseDatosReingresos.length === 0) {
-                recReingresosBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Sin reingresos registrados.</td></tr>`;
-            } else {
-                baseDatosReingresos.slice(0, 5).forEach(r => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${r.fecha || 'N/A'}</td>
-                        <td>${r.solicitante || 'N/A'}</td>
-                        <td class="fw-bold text-primary">${r.local || 'N/A'}</td>
-                        <td>${r.entregado || 'N/A'}</td>
-                        <td class="text-center"><span class="badge bg-dark">${(r.expedientes || []).length} exp.</span></td>
-                    `;
-                    recReingresosBody.appendChild(tr);
-                });
-            }
         }
 
         function renderizarFiltrosConsultas(datos) {
@@ -3060,10 +3003,9 @@
             });
         };
 
-        // ==================== NUEVAS FUNCIONES PARA GENERAR PDF CON VISOR ====================
         window.generarPDFMicroformasInstitucional = async function() {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ orientation: 'l', unit: 'mm', format: 'a4' }); // Landscape para mejor ajuste de tabla
+            const doc = new jsPDF({ orientation: 'l', unit: 'mm', format: 'a4' });
             const pageWidth = doc.internal.pageSize.getWidth();
 
             const logoData = await obtenerLogoArchivoBase64();
