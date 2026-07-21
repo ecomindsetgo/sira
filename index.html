@@ -906,19 +906,21 @@
 
                 <div class="card p-3 p-md-4">
                     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                        <h6 class="form-section-title m-0"><i class="bi bi-box-seam me-2"></i>Detalle de Paquetes a Trasladar</h6>
-                        <button class="btn btn-dark btn-sm" onclick="agregarFilaTraslado()">+ Agregar Paquete</button>
+                        <h6 class="form-section-title m-0"><i class="bi bi-box-seam me-2"></i>Detalle de Rangos de Paquetes a Trasladar</h6>
+                        <button class="btn btn-dark btn-sm" onclick="agregarFilaTraslado()">+ Agregar Rango de Paquetes</button>
                     </div>
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle" id="tabla-traslados">
+                        <table class="table table-hover align-middle text-center" id="tabla-traslados">
                             <thead class="table-light">
                                 <tr>
                                     <th>Ítem</th>
-                                    <th>N° Paquete</th>
+                                    <th>Paquete Inicial</th>
+                                    <th>Paquete Final</th>
+                                    <th>Cant. Paq.</th>
                                     <th>Juzgado</th>
-                                    <th>Repositorio de Salida</th>
-                                    <th>Repositorio de Ingreso</th>
-                                    <th>Motivo de traslado</th>
+                                    <th>Repo. Salida</th>
+                                    <th>Repo. Ingreso</th>
+                                    <th>Motivo</th>
                                     <th>Acción</th>
                                 </tr>
                             </thead>
@@ -926,7 +928,7 @@
                         </table>
                     </div>
                     <div class="mt-3 text-end">
-                        <span class="fw-bold text-secondary">Total de paquetes trasladados: <span id="lbl-total-traslados" class="text-primary fs-5">0</span></span>
+                        <span class="fw-bold text-secondary">Total general de paquetes trasladados: <span id="lbl-total-traslados" class="text-primary fs-5">0</span></span>
                     </div>
                 </div>
 
@@ -3107,18 +3109,23 @@
             }
 
             const paquetes = Array.from(document.querySelectorAll("#tabla-traslados tbody tr")).map(tr => {
+                const desde = tr.querySelector('.tr-desde').value.trim();
+                const hasta = tr.querySelector('.tr-hasta').value.trim();
                 const inputs = tr.querySelectorAll('input, select');
                 return { 
-                    paquete: inputs[0].value, 
-                    juzgado: inputs[1].value, 
-                    repoSalida: inputs[2].value, 
-                    repoIngreso: inputs[3].value, 
-                    motivo: inputs[4].value 
+                    paqueteDesde: desde,
+                    paqueteHasta: hasta || desde,
+                    rangoTexto: hasta && hasta !== desde ? `${desde} al ${hasta}` : desde,
+                    cantidad: parseInt(tr.querySelector('.tr-cant').textContent, 10) || 1,
+                    juzgado: inputs[2].value, 
+                    repoSalida: inputs[3].value, 
+                    repoIngreso: inputs[4].value, 
+                    motivo: inputs[5].value 
                 };
             });
 
             if (paquetes.length === 0) {
-                Swal.fire('Atención', 'Agregue al menos un paquete antes de guardar el traslado.', 'warning');
+                Swal.fire('Atención', 'Agregue al menos un rango de paquetes antes de guardar el traslado.', 'warning');
                 return;
             }
 
@@ -3225,23 +3232,7 @@
 
             if (registro.paquetes && Array.isArray(registro.paquetes)) {
                 registro.paquetes.forEach((e, idx) => {
-                    const repoSalidaOpts = repositorios.map(r => `<option value="${r}" ${e.repoSalida === r ? 'selected' : ''}>${r}</option>`).join('');
-                    const repoIngresoOpts = repositorios.map(r => `<option value="${r}" ${e.repoIngreso === r ? 'selected' : ''}>${r}</option>`).join('');
-
-                    const fila = `<tr>
-                        <td class="text-center fw-bold item-nro">${idx + 1}</td>
-                        <td><input type="text" class="form-control form-control-sm" placeholder="N° Paquete" value="${e.paquete || ''}"></td>
-                        <td><input type="text" class="form-control form-control-sm" placeholder="Juzgado" value="${e.juzgado || ''}"></td>
-                        <td><select class="form-select form-select-sm"><option value="">Seleccione...</option>${repoSalidaOpts}</select></td>
-                        <td><select class="form-select form-select-sm"><option value="">Seleccione...</option>${repoIngresoOpts}</select></td>
-                        <td><input type="text" class="form-control form-control-sm" placeholder="Motivo" value="${e.motivo || ''}"></td>
-                        <td class="text-center">
-                            <button class="btn btn-outline-danger btn-sm" onclick="this.parentElement.parentElement.remove(); reindexarTraslados();">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>`;
-                    tbody.insertAdjacentHTML('beforeend', fila);
+                    agregarFilaTraslado(e.paqueteDesde || e.paquete || '', e.paqueteHasta || e.paquete || '', e.juzgado || '', e.repoSalida || '', e.repoIngreso || '', e.motivo || '');
                 });
             }
 
@@ -3389,7 +3380,7 @@
                 const mEntregado = fEntregado === '' || r.entregado === fEntregado;
                 const mFecha = fFecha === '' || r.fecha === fFecha;
                 const mTexto = fTexto === '' || (r.entregado || '').toLowerCase().includes(fTexto) ||
-                    (r.paquetes || []).some(e => (e.paquete || '').toLowerCase().includes(fTexto) || (e.motivo || '').toLowerCase().includes(fTexto) || (e.repoSalida || '').toLowerCase().includes(fTexto) || (e.repoIngreso || '').toLowerCase().includes(fTexto));
+                    (r.paquetes || []).some(e => (e.paqueteDesde || '').toLowerCase().includes(fTexto) || (e.paqueteHasta || '').toLowerCase().includes(fTexto) || (e.motivo || '').toLowerCase().includes(fTexto) || (e.repoSalida || '').toLowerCase().includes(fTexto) || (e.repoIngreso || '').toLowerCase().includes(fTexto));
                 return mEntregado && mFecha && mTexto;
             });
 
@@ -3436,10 +3427,11 @@
                 return;
             }
             registros.forEach(data => {
+                const totalPaqSuma = (data.paquetes || []).reduce((acc, p) => acc + (parseInt(p.cantidad, 10) || 1), 0);
                 const fila = `<tr>
                     <td>${data.fecha || 'N/A'}</td>
                     <td>${data.entregado || 'N/A'}</td>
-                    <td>${data.paquetes ? data.paquetes.length : 0}</td>
+                    <td>${totalPaqSuma}</td>
                     <td class="text-end">
                         <button class="btn btn-sm btn-danger py-1 px-2 me-1" onclick="window.generarPDFTrasladoDesdeRegistro('${data.id}')" title="Ver PDF">
                             <i class="bi bi-file-pdf"></i>
@@ -3564,20 +3556,28 @@
             doc.text(`Entregado por: ${entregado}`, 15, 40);
             doc.text(`Recibido por: ${recibe || 'N/A'}`, pageWidth - 15, 40, { align: "right" });
 
-            const filasTabla = paquetes.map((e, idx) => [
-                (idx + 1).toString(),
-                e.paquete || '-',
-                e.juzgado || '-',
-                e.repoSalida || '-',
-                e.repoIngreso || '-',
-                e.motivo || '-'
-            ]);
+            let sumaTotalPaq = 0;
+            const filasTabla = paquetes.map((e, idx) => {
+                const rangoStr = e.rangoTexto || (e.paqueteDesde && e.paqueteHasta ? (e.paqueteDesde === e.paqueteHasta ? e.paqueteDesde : `${e.paqueteDesde} al ${e.paqueteHasta}`) : (e.paquete || '-'));
+                const cant = parseInt(e.cantidad, 10) || 1;
+                sumaTotalPaq += cant;
+
+                return [
+                    (idx + 1).toString(),
+                    rangoStr,
+                    cant.toString(),
+                    e.juzgado || '-',
+                    e.repoSalida || '-',
+                    e.repoIngreso || '-',
+                    e.motivo || '-'
+                ];
+            });
 
             doc.autoTable({
                 startY: 45,
                 margin: { left: 15, right: 15 },
                 theme: 'grid',
-                head: [['Ítem', 'N° Paquete', 'Juzgado', 'Repositorio de Salida', 'Repositorio de Ingreso', 'Motivo de traslado']],
+                head: [['Ítem', 'Rango Paquetes', 'Cant.', 'Juzgado', 'Repo. Salida', 'Repo. Ingreso', 'Motivo']],
                 body: filasTabla,
                 headStyles: { fillColor: [128, 0, 0], textColor: [255, 255, 255], fontSize: 8.5, halign: 'center' },
                 styles: { fontSize: 8, font: 'Inter', halign: 'center', cellPadding: 2 }
@@ -3585,7 +3585,7 @@
 
             let currentY = doc.lastAutoTable.finalY + 8;
             doc.setFont("Inter", "bold"); doc.setFontSize(9); doc.setTextColor(0, 0, 0);
-            doc.text(`Total de paquetes trasladados: ${paquetes.length}`, 15, currentY);
+            doc.text(`Total general de paquetes trasladados: ${sumaTotalPaq}`, 15, currentY);
 
             currentY += 25;
             if (currentY > 255) { doc.addPage(); currentY = 30; }
@@ -3632,18 +3632,23 @@
             }
 
             const paquetes = Array.from(document.querySelectorAll("#tabla-traslados tbody tr")).map(tr => {
+                const desde = tr.querySelector('.tr-desde').value.trim();
+                const hasta = tr.querySelector('.tr-hasta').value.trim();
                 const inputs = tr.querySelectorAll('input, select');
                 return { 
-                    paquete: inputs[0].value, 
-                    juzgado: inputs[1].value, 
-                    repoSalida: inputs[2].value, 
-                    repoIngreso: inputs[3].value, 
-                    motivo: inputs[4].value 
+                    paqueteDesde: desde,
+                    paqueteHasta: hasta || desde,
+                    rangoTexto: hasta && hasta !== desde ? `${desde} al ${hasta}` : desde,
+                    cantidad: parseInt(tr.querySelector('.tr-cant').textContent, 10) || 1,
+                    juzgado: inputs[2].value, 
+                    repoSalida: inputs[3].value, 
+                    repoIngreso: inputs[4].value, 
+                    motivo: inputs[5].value 
                 };
             });
 
             if (paquetes.length === 0) {
-                Swal.fire('Atención', 'Agregue al menos un paquete antes de generar el reporte de traslado.', 'warning');
+                Swal.fire('Atención', 'Agregue al menos un rango de paquetes antes de generar el reporte de traslado.', 'warning');
                 return;
             }
 
@@ -3995,25 +4000,57 @@
             tbody.insertAdjacentHTML('beforeend', fila);
         }
 
-        function agregarFilaTraslado() {
+        function agregarFilaTraslado(paqueteDesde = '', paqueteHasta = '', juzgado = '', repoSalida = '', repoIngreso = '', motivo = '') {
             const tbody = document.querySelector('#tabla-traslados tbody');
             const totalActual = tbody.querySelectorAll('tr').length + 1;
-            const repoOpts = ["SÓTANO NCPP", "SAENZ PEÑA", "PADILLA", "DUNAS", "DOMUS"].map(r => `<option value="${r}">${r}</option>`).join('');
+            const repoOpts = ["SÓTANO NCPP", "SAENZ PEÑA", "PADILLA", "DUNAS", "DOMUS"].map(r => `<option value="${r}" ${repoSalida === r ? 'selected' : ''}>${r}</option>`).join('');
+            const repoIngOpts = ["SÓTANO NCPP", "SAENZ PEÑA", "PADILLA", "DUNAS", "DOMUS"].map(r => `<option value="${r}" ${repoIngreso === r ? 'selected' : ''}>${r}</option>`).join('');
             
             const fila = `<tr>
-                <td class="text-center fw-bold item-nro">${totalActual}</td>
-                <td><input type="text" class="form-control form-control-sm" placeholder="N° Paquete"></td>
-                <td><input type="text" class="form-control form-control-sm" placeholder="Juzgado"></td>
+                <td class="fw-bold item-nro">${totalActual}</td>
+                <td><input type="text" class="form-control form-control-sm text-center tr-desde" placeholder="Ej: 23-001" value="${paqueteDesde}" oninput="recalcularFilaTraslado(this)"></td>
+                <td><input type="text" class="form-control form-control-sm text-center tr-hasta" placeholder="Ej: 23-050" value="${paqueteHasta}" oninput="recalcularFilaTraslado(this)"></td>
+                <td><span class="badge bg-light text-dark border tr-cant fs-6">0</span></td>
+                <td><input type="text" class="form-control form-control-sm" placeholder="Juzgado" value="${juzgado}"></td>
                 <td><select class="form-select form-select-sm"><option value="">Seleccione...</option>${repoOpts}</select></td>
-                <td><select class="form-select form-select-sm"><option value="">Seleccione...</option>${repoOpts}</select></td>
-                <td><input type="text" class="form-control form-control-sm" placeholder="Motivo"></td>
+                <td><select class="form-select form-select-sm"><option value="">Seleccione...</option>${repoIngOpts}</select></td>
+                <td><input type="text" class="form-control form-control-sm" placeholder="Motivo" value="${motivo}"></td>
                 <td class="text-center">
-                    <button class="btn btn-outline-danger btn-sm" onclick="this.parentElement.parentElement.remove(); reindexarTraslados();">
+                    <button class="btn btn-outline-danger btn-sm py-0 px-1" onclick="this.parentElement.parentElement.remove(); reindexarTraslados();">
                         <i class="bi bi-trash"></i>
                     </button>
                 </td>
             </tr>`;
             tbody.insertAdjacentHTML('beforeend', fila);
+            
+            const nuevaFilaTr = tbody.lastElementChild;
+            recalcularFilaTraslado(nuevaFilaTr.querySelector('.tr-desde'));
+        }
+
+        function recalcularFilaTraslado(elementoInput) {
+            const tr = elementoInput.closest('tr');
+            const desdeInput = tr.querySelector('.tr-desde').value.trim();
+            const hastaInput = tr.querySelector('.tr-hasta').value.trim();
+            const badgeCant = tr.querySelector('.tr-cant');
+
+            let cantidadCalculada = 0;
+
+            if (desdeInput && hastaInput) {
+                const matchDesde = desdeInput.match(REGEX_RANGO_PAQUETE);
+                const matchHasta = hastaInput.match(REGEX_RANGO_PAQUETE);
+
+                if (matchDesde && matchHasta) {
+                    const numDesde = parseInt(matchDesde[2], 10);
+                    const numHasta = parseInt(matchHasta[2], 10);
+                    if (!isNaN(numDesde) && !isNaN(numHasta) && numHasta >= numDesde) {
+                        cantidadCalculada = (numHasta - numDesde) + 1;
+                    }
+                }
+            } else if (desdeInput && !hastaInput) {
+                cantidadCalculada = 1;
+            }
+
+            badgeCant.textContent = cantidadCalculada;
             actualizarTotalTraslados();
         }
 
@@ -4027,9 +4064,15 @@
         }
 
         function actualizarTotalTraslados() {
-            const total = document.querySelectorAll('#tabla-traslados tbody tr').length;
+            let sumaTotalPaquetes = 0;
+            document.querySelectorAll('#tabla-traslados tbody tr').forEach(tr => {
+                const badge = tr.querySelector('.tr-cant');
+                if (badge) {
+                    sumaTotalPaquetes += parseInt(badge.textContent, 10) || 0;
+                }
+            });
             const lbl = document.getElementById('lbl-total-traslados');
-            if (lbl) lbl.textContent = total;
+            if (lbl) lbl.textContent = sumaTotalPaquetes;
         }
     </script>
 </body>
