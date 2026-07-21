@@ -1071,7 +1071,21 @@
                             </div>
                             <div class="col-12 col-md-6">
                                 <label class="form-label small fw-bold">Mes</label>
-                                <input type="text" class="form-control form-control-sm" id="mf-mes" required placeholder="Ej: DICIEMBRE">
+                                <select class="form-control form-control-sm" id="mf-mes" required>
+                                    <option value="" disabled selected>Seleccione un mes...</option>
+                                    <option value="ENERO">ENERO</option>
+                                    <option value="FEBRERO">FEBRERO</option>
+                                    <option value="MARZO">MARZO</option>
+                                    <option value="ABRIL">ABRIL</option>
+                                    <option value="MAYO">MAYO</option>
+                                    <option value="JUNIO">JUNIO</option>
+                                    <option value="JULIO">JULIO</option>
+                                    <option value="AGOSTO">AGOSTO</option>
+                                    <option value="SEPTIEMBRE">SEPTIEMBRE</option>
+                                    <option value="OCTUBRE">OCTUBRE</option>
+                                    <option value="NOVIEMBRE">NOVIEMBRE</option>
+                                    <option value="DICIEMBRE">DICIEMBRE</option>
+                                </select>
                             </div>
                             <div class="col-12 col-md-4">
                                 <label class="form-label small fw-bold">Fecha Inicio</label>
@@ -1217,6 +1231,9 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+
+        // Nombre que aparece en la firma del reporte "Control de Producción de Microformas Digitales"
+        const NOMBRE_SUPERVISOR_LPMD = "ALFREDO CRUZADO PALACIOS";
 
         const repositorios = ["SÓTANO NCPP", "SAENZ PEÑA", "PADILLA", "DUNAS", "DOMUS"];
         const listaPersonalRoles = {
@@ -3152,9 +3169,21 @@
             doc.text("VALIDADO POR JEFATURA", 195, currentY, { align: "center" });
 
             currentY += 4;
-            doc.setFont("Inter", "normal"); doc.setFontSize(7.5);
-            doc.text(auth.currentUser ? normalizarTexto(auth.currentUser.displayName || auth.currentUser.email.split('@')[0]) : 'OPERADOR', 105, currentY, { align: "center" });
+            doc.setFont("Inter", "bold"); doc.setFontSize(7.5);
+            doc.text(NOMBRE_SUPERVISOR_LPMD, 105, currentY, { align: "center" });
             doc.text("JEFE DE ARCHIVO DESCONCENTRADO", 195, currentY, { align: "center" });
+
+            currentY += 3.5;
+            doc.setFont("Inter", "normal"); doc.setFontSize(7);
+            doc.text("SUPERVISOR DE LA LÍNEA DE PRODUCCIÓN DE MICROFORMAS DIGITALES (LPMD)", 105, currentY, { align: "center" });
+
+            currentY += 3.5;
+            doc.text("CORTE SUPERIOR DE JUSTICIA DEL SANTA", 105, currentY, { align: "center" });
+
+            currentY += 8;
+            const fechaGeneracionMf = new Date().toLocaleString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            doc.setFont("Inter", "italic"); doc.setFontSize(7.5); doc.setTextColor(90, 90, 90);
+            doc.text(`Fecha de creación / impresión: ${fechaGeneracionMf}`, pageWidth / 2, currentY, { align: "center" });
 
             const blobUrl = doc.output('bloburl');
             const fechaHoy = new Date().toISOString().split('T')[0];
@@ -3236,17 +3265,12 @@
                 body: [[rM, rH, tA]]
             });
 
-            currentY = doc.lastAutoTable.finalY + 25;
-            if (currentY > 250) { doc.addPage(); currentY = 40; }
+            currentY = doc.lastAutoTable.finalY + 12;
+            if (currentY > 270) { doc.addPage(); currentY = 30; }
 
-            doc.setLineWidth(0.3);
-            doc.line(35, currentY, 95, currentY);
-            doc.line(115, currentY, 175, currentY);
-
-            currentY += 4;
-            doc.setFont("Inter", "bold"); doc.setFontSize(8);
-            doc.text("RESPONSABLE DE JEFATURA", 65, currentY, { align: "center" });
-            doc.text("ADMINISTRACIÓN ARCHIVO", 145, currentY, { align: "center" });
+            const fechaGeneracion = new Date().toLocaleString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            doc.setFont("Inter", "italic"); doc.setFontSize(7.5); doc.setTextColor(90, 90, 90);
+            doc.text(`Fecha de creación / impresión: ${fechaGeneracion}`, pageWidth / 2, currentY, { align: "center" });
 
             const blobUrl = doc.output('bloburl');
             const fechaHoy = new Date().toISOString().split('T')[0];
