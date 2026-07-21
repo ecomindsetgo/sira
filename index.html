@@ -339,6 +339,9 @@
                 <a class="nav-link" href="#" data-view="view-tarjetas" onclick="switchView('view-tarjetas', 'Generador de Tarjetas de Paquetes')">
                     <i class="bi bi-card-checklist"></i> Generador de Tarjetas
                 </a>
+                <a class="nav-link" href="#" data-view="view-consultas-tarjetas" onclick="switchView('view-consultas-tarjetas', 'Consultar Historial de Tarjetas')">
+                    <i class="bi bi-search"></i> Consultar Tarjetas
+                </a>
                 <a class="nav-link" href="#" data-view="view-inventario" onclick="window.iniciarNuevoInventario()">
                     <i class="bi bi-journal-plus"></i> Cargar Inventario
                 </a>
@@ -469,7 +472,65 @@
                         </table>
                     </div>
                     <div class="d-flex justify-content-end mt-4 gap-2 flex-wrap">
-                        <button class="btn btn-danger px-4 btn-ancho-movil" onclick="window.generarPDFTarjetasOficial()"><i class="bi bi-file-pdf me-2"></i>Generar PDF de Tarjetas</button>
+                        <button class="btn btn-primary px-4 fw-bold btn-ancho-movil" onclick="window.guardarYGenerarPDFTarjetas()"><i class="bi bi-cloud-upload me-2"></i>Guardar y Generar PDF</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- NUEVO MÓDULO: CONSULTAR TARJETAS -->
+            <section id="view-consultas-tarjetas" class="view-section">
+                <div class="card p-3 p-md-4 border-0 shadow-sm mb-3">
+                    <h6 class="form-section-title"><i class="bi bi-funnel me-2"></i>Filtros de Búsqueda de Tarjetas</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <label class="form-label small">Juzgado</label>
+                            <input type="text" id="filtro-tar-juzgado" class="form-control form-control-sm" placeholder="🔍 Filtrar por juzgado..." onkeyup="filtrarHistorialTarjetas()">
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label small">Repositorio</label>
+                            <select class="form-select form-select-sm" id="filtro-tar-repositorio" onchange="filtrarHistorialTarjetas()">
+                                <option value="">Todos los repositorios</option>
+                                <option value="SÓTANO NCPP">SÓTANO NCPP</option>
+                                <option value="PADILLA">PADILLA</option>
+                                <option value="DOMUS">DOMUS</option>
+                                <option value="DUNAS">DUNAS</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label small">Búsqueda libre</label>
+                            <input type="text" id="busqueda-tarjetas" class="form-control form-control-sm" placeholder="🔍 Oficio, juez, responsable..." onkeyup="filtrarHistorialTarjetas()">
+                        </div>
+                    </div>
+                    <div class="text-end mt-2">
+                        <button class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('filtro-tar-juzgado').value='';document.getElementById('filtro-tar-repositorio').value='';document.getElementById('busqueda-tarjetas').value='';filtrarHistorialTarjetas()">
+                            <i class="bi bi-x-circle"></i> Limpiar filtros
+                        </button>
+                    </div>
+                </div>
+                <div class="card p-3 p-md-4 border-0 shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold m-0 text-dark">
+                            <i class="bi bi-search me-2"></i>Historial de Bloques de Tarjetas Registrados
+                        </h6>
+                        <button class="btn btn-primary btn-sm" onclick="cargarHistorialTarjetas()">
+                            <i class="bi bi-arrow-clockwise"></i> Actualizar
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle border" style="font-size: 0.85rem;">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Juzgado / Juez</th>
+                                    <th>Tipo / Repo</th>
+                                    <th>Total Paquetes</th>
+                                    <th>Responsable</th>
+                                    <th class="text-end">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-historial-tarjetas">
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </section>
@@ -1479,7 +1540,6 @@
                 btnNuevaMicroforma.style.display = puedeMicroformasEscritura ? 'flex' : 'none';
             }
 
-            // REINGRESOS: Mantiene su validación original
             document.getElementById('btn-guardar-reingreso')?.toggleAttribute('disabled', !puedeReingresos);
             
             const btnAgregarExpediente = document.querySelector('button[onclick="agregarFilaReingreso()"]');
@@ -1492,13 +1552,12 @@
             const btnGenerarPDF = document.querySelector('button[onclick="generarReporteReingresoPDF()"]');
             if (btnGenerarPDF) {
                 btnGenerarPDF.disabled = !puedeReingresos;
-                btnGenerarPDF.style.pointerEvents = puedeReingresos ? 'auto' : 'none';
+                btnGenerarPDF.style.pointerEvents = peutReingresos ? 'auto' : 'none';
                 btnGenerarPDF.classList.toggle('opacity-50', !puedeReingresos);
             }
 
             document.querySelectorAll('#view-reingresos input, #view-reingresos select').forEach(el => el.disabled = !puedeReingresos);
 
-            // FORMATO DE TRASLADO: ABIERTO PARA TODOS LOS USUARIOS AUTENTICADOS
             document.getElementById('btn-guardar-traslado')?.removeAttribute('disabled');
             
             const btnAgregarTraslado = document.querySelector('button[onclick="agregarFilaTraslado()"]');
@@ -1517,7 +1576,6 @@
 
             document.querySelectorAll('#view-traslados input, #view-traslados select').forEach(el => el.disabled = false);
 
-            // INVENTARIO: Mantiene su validación original
             document.getElementById('form-inventario')?.querySelectorAll('input, select, button[type=submit]').forEach(el => el.disabled = !puedeInventario);
 
             const btnAgregarRango = document.querySelector('button[onclick="abrirModalRango()"]');
@@ -1559,6 +1617,7 @@
         let baseDatosReingresos = [];
         let baseDatosTraslados = [];
         let baseDatosMicroformas = [];
+        let baseDatosTarjetas = [];
         let listaLogsAuditoria = [];
         let idReingresoEnEdicion = null;
         let idTrasladoEnEdicion = null;
@@ -1756,6 +1815,10 @@
             if (viewId === 'view-consultas-traslados') {
                 cargarHistorialTraslados();
             }
+
+            if (viewId === 'view-consultas-tarjetas') {
+                cargarHistorialTarjetas();
+            }
         }
 
         document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -1812,6 +1875,7 @@
                 await cargarHistorialReingresosParaDashboard().catch(err => console.error(err));
                 await cargarHistorialTrasladosParaDashboard().catch(err => console.error(err));
                 await cargarMicroformasDesdeCloud().catch(err => console.error(err));
+                await cargarHistorialTarjetas().catch(err => console.error(err));
             } else {
                 document.getElementById('app-container').style.display = 'none';
                 document.getElementById('login-container').style.display = 'flex';
@@ -2752,181 +2816,6 @@
                             usuario: userCreacion,
                             detalle: `Repositorio: ${d.repositorio} | Fecha ejecución: ${d.fecha} | Total Real: ${d.totalReal}`
                         });
-
-                        if (d.auditoriaEdicion) {
-                            const userEd = d.auditoriaEdicion.nombre || 'Desconocido';
-                            setUsuariosUnicos.add(userEd);
-                            listaLogsAuditoria.push({
-                                fechaISO: d.auditoriaEdicion.timestamp ? new Date(d.auditoriaEdicion.timestamp).toISOString().split('T')[0] : '',
-                                fecha: d.auditoriaEdicion.timestamp ? new Date(d.auditoriaEdicion.timestamp).toLocaleString() : 'N/A',
-                                timestamp: d.auditoriaEdicion.timestamp || 0,
-                                modulo: 'Inventario de Existencias',
-                                accion: 'Edición de Lote',
-                                usuario: userEd,
-                                detalle: `Se modificó el lote del repositorio: ${d.repositorio}`
-                            });
-                        }
-
-                        if (d.activo === false && d.auditoriaEliminacion) {
-                            const userDel = d.auditoriaEliminacion.nombre || 'Desconocido';
-                            setUsuariosUnicos.add(userDel);
-                            listaLogsAuditoria.push({
-                                fechaISO: d.auditoriaEliminacion.timestamp ? new Date(d.auditoriaEliminacion.timestamp).toISOString().split('T')[0] : '',
-                                fecha: d.auditoriaEliminacion.timestamp ? new Date(d.auditoriaEliminacion.timestamp).toLocaleString() : 'N/A',
-                                timestamp: d.auditoriaEliminacion.timestamp || 0,
-                                modulo: 'Inventario de Existencias',
-                                accion: 'Eliminación',
-                                usuario: userDel,
-                                detalle: `Se dio de baja al lote del repositorio: ${d.repositorio}`
-                            });
-                        }
-                    });
-                } catch(err) { console.warn(err); }
-
-                try {
-                    const snapReingresos = await getDocs(collection(db, "reingresos"));
-                    snapReingresos.forEach(docSnap => {
-                        const d = docSnap.data();
-                        const timestampReg = d.auditoria?.timestamp || d.createdAt || 0;
-                        const userReing = d.auditoria?.nombre || d.entregado || 'Desconocido';
-                        setUsuariosUnicos.add(userReing);
-                        
-                        listaLogsAuditoria.push({
-                            fechaISO: timestampReg ? new Date(timestampReg).toISOString().split('T')[0] : '',
-                            fecha: timestampReg ? new Date(timestampReg).toLocaleString() : 'N/A',
-                            timestamp: timestampReg,
-                            modulo: 'Módulo Reingresos',
-                            accion: 'Registro de Reingreso',
-                            usuario: userReing,
-                            detalle: `Correlativo N° ${d.correlativo} | Local: ${d.local} | Solicitante: ${d.solicitante}`
-                        });
-
-                        if (d.auditoriaEdicion) {
-                            const userEdRe = d.auditoriaEdicion.nombre || 'Desconocido';
-                            setUsuariosUnicos.add(userEdRe);
-                            listaLogsAuditoria.push({
-                                fechaISO: d.auditoriaEdicion.timestamp ? new Date(d.auditoriaEdicion.timestamp).toISOString().split('T')[0] : '',
-                                fecha: d.auditoriaEdicion.timestamp ? new Date(d.auditoriaEdicion.timestamp).toLocaleString() : 'N/A',
-                                timestamp: d.auditoriaEdicion.timestamp || 0,
-                                modulo: 'Módulo Reingresos',
-                                accion: 'Edición de Lote',
-                                usuario: userEdRe,
-                                detalle: `Se modificó el reingreso N° ${d.correlativo} (${d.local})`
-                            });
-                        }
-
-                        if (d.activo === false && d.auditoriaEliminacion) {
-                            const userDelRe = d.auditoriaEliminacion.nombre || 'Desconocido';
-                            setUsuariosUnicos.add(userDelRe);
-                            listaLogsAuditoria.push({
-                                fechaISO: d.auditoriaEliminacion.timestamp ? new Date(d.auditoriaEliminacion.timestamp).toISOString().split('T')[0] : '',
-                                fecha: d.auditoriaEliminacion.timestamp ? new Date(d.auditoriaEliminacion.timestamp).toLocaleString() : 'N/A',
-                                timestamp: d.auditoriaEliminacion.timestamp || 0,
-                                modulo: 'Módulo Reingresos',
-                                accion: 'Eliminación',
-                                usuario: userDelRe,
-                                detalle: `Se dio de baja al reingreso N° ${d.correlativo} (${d.local})`
-                            });
-                        }
-                    });
-                } catch(err) { console.warn(err); }
-
-                try {
-                    const snapTraslados = await getDocs(collection(db, "traslados"));
-                    snapTraslados.forEach(docSnap => {
-                        const d = docSnap.data();
-                        const timestampReg = d.auditoria?.timestamp || d.createdAt || 0;
-                        const userTr = d.auditoria?.nombre || d.entregado || 'Desconocido';
-                        setUsuariosUnicos.add(userTr);
-                        
-                        listaLogsAuditoria.push({
-                            fechaISO: timestampReg ? new Date(timestampReg).toISOString().split('T')[0] : '',
-                            fecha: timestampReg ? new Date(timestampReg).toLocaleString() : 'N/A',
-                            timestamp: timestampReg,
-                            modulo: 'Formato de Traslado',
-                            accion: 'Registro de Traslado',
-                            usuario: userTr,
-                            detalle: `Correlativo N° ${d.correlativo} | Total Paquetes: ${d.paquetes ? d.paquetes.length : 0}`
-                        });
-
-                        if (d.auditoriaEdicion) {
-                            const userEdTr = d.auditoriaEdicion.nombre || 'Desconocido';
-                            setUsuariosUnicos.add(userEdTr);
-                            listaLogsAuditoria.push({
-                                fechaISO: d.auditoriaEdicion.timestamp ? new Date(d.auditoriaEdicion.timestamp).toISOString().split('T')[0] : '',
-                                fecha: d.auditoriaEdicion.timestamp ? new Date(d.auditoriaEdicion.timestamp).toLocaleString() : 'N/A',
-                                timestamp: d.auditoriaEdicion.timestamp || 0,
-                                modulo: 'Formato de Traslado',
-                                accion: 'Edición de Lote',
-                                usuario: userEdTr,
-                                detalle: `Se modificó el traslado N° ${d.correlativo}`
-                            });
-                        }
-
-                        if (d.activo === false && d.auditoriaEliminacion) {
-                            const userDelTr = d.auditoriaEliminacion.nombre || 'Desconocido';
-                            setUsuariosUnicos.add(userDelTr);
-                            listaLogsAuditoria.push({
-                                fechaISO: d.auditoriaEliminacion.timestamp ? new Date(d.auditoriaEliminacion.timestamp).toISOString().split('T')[0] : '',
-                                fecha: d.auditoriaEliminacion.timestamp ? new Date(d.auditoriaEliminacion.timestamp).toLocaleString() : 'N/A',
-                                timestamp: d.auditoriaEliminacion.timestamp || 0,
-                                modulo: 'Formato de Traslado',
-                                accion: 'Eliminación',
-                                usuario: userDelTr,
-                                detalle: `Se dio de baja al traslado N° ${d.correlativo}`
-                            });
-                        }
-                    });
-                } catch(err) { console.warn(err); }
-
-                try {
-                    const snapMicro = await getDocs(collection(db, "control_microformas"));
-                    snapMicro.forEach(docSnap => {
-                        const d = docSnap.data();
-                        const tsCreacion = d.auditoriaCreacion?.timestamp || d.timestamp || 0;
-                        const userCreacionMicro = d.auditoriaCreacion?.nombre || 'ALFREDO CRUZADO';
-                        if (tsCreacion) {
-                            setUsuariosUnicos.add(userCreacionMicro);
-                            listaLogsAuditoria.push({
-                                fechaISO: new Date(tsCreacion).toISOString().split('T')[0],
-                                fecha: new Date(tsCreacion).toLocaleString(),
-                                timestamp: tsCreacion,
-                                modulo: 'Control Microformas',
-                                accion: 'Creación de Lote',
-                                usuario: userCreacionMicro,
-                                detalle: `Bloque N° ${d.bloque} | Rango: ${d.rango} | Juzgado: ${d.juzgado}`
-                            });
-                        }
-
-                        if (d.auditoriaEdicion) {
-                            const tsEdicion = d.auditoriaEdicion.timestamp || 0;
-                            const userEdMicro = d.auditoriaEdicion.nombre || 'ALFREDO CRUZADO';
-                            setUsuariosUnicos.add(userEdMicro);
-                            listaLogsAuditoria.push({
-                                fechaISO: tsEdicion ? new Date(tsEdicion).toISOString().split('T')[0] : '',
-                                fecha: tsEdicion ? new Date(tsEdicion).toLocaleString() : 'N/A',
-                                timestamp: tsEdicion,
-                                modulo: 'Control Microformas',
-                                accion: 'Edición de Lote',
-                                usuario: userEdMicro,
-                                detalle: `Se modificó el Bloque N° ${d.bloque} (${d.juzgado})`
-                            });
-                        }
-
-                        if (d.activo === false && d.auditoriaEliminacion) {
-                            const tsEliminacion = d.auditoriaEliminacion.timestamp || 0;
-                            const userDelMicro = d.auditoriaEliminacion.nombre || 'ALFREDO CRUZADO';
-                            setUsuariosUnicos.add(userDelMicro);
-                            listaLogsAuditoria.push({
-                                fechaISO: tsEliminacion ? new Date(tsEliminacion).toISOString().split('T')[0] : '',
-                                fecha: tsEliminacion ? new Date(tsEliminacion).toLocaleString() : 'N/A',
-                                timestamp: tsEliminacion,
-                                modulo: 'Control Microformas',
-                                accion: 'Eliminación',
-                                usuario: userDelMicro,
-                                detalle: `Se dio de baja al Bloque N° ${d.bloque} (${d.juzgado})`
-                            });
-                        }
                     });
                 } catch(err) { console.warn(err); }
 
@@ -4077,11 +3966,112 @@
             mostrarModalPreviewPDF(blobUrl, `REPORTE_GLOBAL_${fechaHoy}.pdf`);
         };
 
-        // MOTOR DE GENERACIÓN DE TARJETAS DE PAQUETES (PDF OFICIAL 2x1)
-        window.generarPDFTarjetasOficial = async function() {
+        // MOTOR DE GENERACIÓN DE TARJETAS DE PAQUETES (PDF HORIZONTAL 2x1)
+        async function construirPDFTarjetas({ anioIngreso, personal, tipoArchivo, repositorio, juzgado, juez, fechaRecepcion, oficio, paquetesData }) {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+            const doc = new jsPDF({ orientation: 'l', unit: 'mm', format: 'a4' }); // Horizontal (landscape)
             
+            const logoData = await obtenerLogoArchivoBase64();
+
+            const dibujarTarjeta = (x, y, dataPaquete) => {
+                const w = 132; // Ancho de la tarjeta en horizontal
+                const h = 88;  // Alto de la tarjeta en horizontal
+
+                doc.setDrawColor(40, 40, 40);
+                doc.setLineWidth(0.4);
+                doc.setFillColor(255, 255, 255);
+                doc.rect(x, y, w, h, 'FD');
+
+                if (logoData) {
+                    doc.addImage(logoData, 'PNG', x + 4, y + 2, 10, 10);
+                }
+                doc.setFont("Inter", "bold");
+                doc.setFontSize(8.5);
+                doc.setTextColor(20, 20, 20);
+                doc.text("PODER JUDICIAL DEL PERÚ", x + w / 2, y + 4.5, { align: "center" });
+                
+                doc.setFontSize(6);
+                doc.text("CORTE SUPERIOR DE JUSTICIA DEL SANTA - ARCHIVO DESCONCENTRADO", x + w / 2, y + 8, { align: "center" });
+
+                doc.setLineWidth(0.3);
+                doc.line(x + 3, y + 10, x + w - 3, y + 10);
+
+                let cursorY = y + 12;
+                const altoFila = 5.2;
+
+                const filaDato = (label, valor) => {
+                    doc.setFont("Inter", "bold");
+                    doc.setFontSize(6);
+                    doc.setTextColor(80, 80, 80);
+                    doc.text(label, x + 4, cursorY + 3.5);
+
+                    doc.setDrawColor(60, 60, 60);
+                    doc.setFillColor(248, 248, 248);
+                    doc.rect(x + 35, cursorY, w - 38, altoFila, 'FD');
+
+                    doc.setFont("Inter", "bold");
+                    doc.setFontSize(7.5);
+                    doc.setTextColor(10, 10, 10);
+                    doc.text(String(valor || ''), x + 35 + ((w - 38) / 2), cursorY + (altoFila / 2) + 1.2, { align: "center" });
+                    cursorY += altoFila + 1.5;
+                };
+
+                filaDato("TIPO DE ARCHIVO", tipoArchivo);
+                filaDato("JUZGADO", juzgado);
+                filaDato("JUEZ", juez);
+
+                // Paquete N° (Doble caja año / número)
+                doc.setFont("Inter", "bold");
+                doc.setFontSize(6);
+                doc.setTextColor(80, 80, 80);
+                doc.text("PAQUETE N°", x + 4, cursorY + 3.5);
+
+                const halfW = (w - 38) / 2;
+                doc.setDrawColor(60, 60, 60);
+                doc.setFillColor(248, 248, 248);
+                doc.rect(x + 35, cursorY, halfW, altoFila, 'FD');
+                doc.rect(x + 35 + halfW, cursorY, halfW, altoFila, 'FD');
+
+                doc.setFont("Inter", "bold");
+                doc.setFontSize(8);
+                doc.text(String(anioIngreso || ''), x + 35 + (halfW / 2), cursorY + (altoFila / 2) + 1.2, { align: "center" });
+                doc.text(String(dataPaquete.nroPaq || ''), x + 35 + halfW + (halfW / 2), cursorY + (altoFila / 2) + 1.2, { align: "center" });
+
+                doc.setFont("Inter", "normal");
+                doc.setFontSize(4.5);
+                doc.setTextColor(100, 100, 100);
+                doc.text("AÑO DE INGRESO", x + 35 + (halfW / 2), cursorY + altoFila + 2, { align: "center" });
+                doc.text("NÚMERO PAQUETE", x + 35 + halfW + (halfW / 2), cursorY + altoFila + 2, { align: "center" });
+
+                cursorY += altoFila + 3.5;
+
+                filaDato("CANT. EXPEDIENTES", dataPaquete.cantExp);
+                filaDato("AÑO EXPEDIENTES", dataPaquete.anioExp);
+                filaDato("DOC. ING. ARCHIVO", oficio);
+                filaDato("FECHA RECEPCIÓN", fechaRecepcion);
+                filaDato("TRABAJADO POR", personal);
+                filaDato("REPOSITORIO", repositorio);
+            };
+
+            // En hoja horizontal (297 x 210 mm), colocamos 2 tarjetas lado a lado
+            // Tarjeta 1: X = 12, Y = 10
+            // Tarjeta 2: X = 153, Y = 10
+            for (let i = 0; i < paquetesData.length; i += 2) {
+                if (i > 0) doc.addPage();
+                
+                const yPos = 12;
+                dibujarTarjeta(12, yPos, paquetesData[i]);
+
+                if (i + 1 < paquetesData.length) {
+                    dibujarTarjeta(153, yPos, paquetesData[i + 1]);
+                }
+            }
+
+            const blobUrl = doc.output('bloburl');
+            return blobUrl;
+        }
+
+        window.guardarYGenerarPDFTarjetas = async function() {
             const anioIngreso = document.getElementById('tar-anio-ingreso').value;
             const personal = document.getElementById('tar-personal').value;
             const tipoArchivo = document.getElementById('tar-tipo-archivo').value;
@@ -4113,106 +4103,122 @@
                 return;
             }
 
-            const logoData = await obtenerLogoArchivoBase64();
+            const currentUserObj = auth.currentUser;
+            const currentUserName = currentUserObj ? (currentUserObj.displayName ? normalizarTexto(currentUserObj.displayName) : normalizarTexto(currentUserObj.email.split('@')[0])) : 'DESCONOCIDO';
 
-            // Función para dibujar una tarjeta individual en una posición específica (x, y)
-            const dibujarTarjeta = (x, y, dataPaquete) => {
-                const w = 88; // Ancho de la tarjeta en mm
-                const h = 132; // Alto de la tarjeta en mm
-
-                // Borde exterior y fondo blanco
-                doc.setDrawColor(40, 40, 40);
-                doc.setLineWidth(0.4);
-                doc.setFillColor(255, 255, 255);
-                doc.rect(x, y, w, h, 'FD');
-
-                // Encabezado institucional
-                if (logoData) {
-                    doc.addImage(logoData, 'PNG', x + 3, y + 2, 10, 10);
-                }
-                doc.setFont("Inter", "bold");
-                doc.setFontSize(8.5);
-                doc.setTextColor(20, 20, 20);
-                doc.text("PODER JUDICIAL DEL PERÚ", x + w / 2, y + 4.5, { align: "center" });
-                
-                doc.setFontSize(6.5);
-                doc.text("CORTE SUPERIOR DE JUSTICIA DEL SANTA", x + w / 2, y + 8, { align: "center" });
-                doc.text("ARCHIVO DESCONCENTRADO", x + w / 2, y + 11, { align: "center" });
-
-                doc.setLineWidth(0.3);
-                doc.line(x + 3, y + 13, x + w - 3, y + 13);
-
-                let cursorY = y + 16;
-
-                // Bloques de campos de la tarjeta
-                const campoFila = (label, valor, altoBox = 6, esDoble = false, val2 = '', lblSub1 = '', lblSub2 = '') => {
-                    doc.setFont("Inter", "bold");
-                    doc.setFontSize(6.5);
-                    doc.setTextColor(80, 80, 80);
-                    doc.text(label, x + 3, cursorY + 3.5);
-
-                    if (!esDoble) {
-                        doc.setDrawColor(60, 60, 60);
-                        doc.setFillColor(248, 248, 248);
-                        doc.rect(x + 28, cursorY, w - 31, altoBox, 'FD');
-
-                        doc.setFont("Inter", "bold");
-                        doc.setFontSize(8.5);
-                        doc.setTextColor(10, 10, 10);
-                        doc.text(String(valor || ''), x + 28 + (w - 31) / 2, cursorY + (altoBox / 2) + 1.2, { align: "center" });
-                        cursorY += altoBox + 2;
-                    } else {
-                        // Caso especial para PAQUETE N° (Año de ingreso y Número de paquete)
-                        doc.setDrawColor(60, 60, 60);
-                        doc.setFillColor(248, 248, 248);
-                        doc.rect(x + 28, cursorY, (w - 31) / 2, altoBox, 'FD');
-                        doc.rect(x + 28 + (w - 31) / 2, cursorY, (w - 31) / 2, altoBox, 'FD');
-
-                        doc.setFont("Inter", "bold");
-                        doc.setFontSize(9.5);
-                        doc.setTextColor(10, 10, 10);
-                        doc.text(String(valor || ''), x + 28 + ((w - 31) / 4), cursorY + (altoBox / 2) + 1.2, { align: "center" });
-                        doc.text(String(val2 || ''), x + 28 + ((w - 31) / 2) + ((w - 31) / 4), cursorY + (altoBox / 2) + 1.2, { align: "center" });
-
-                        doc.setFont("Inter", "normal");
-                        doc.setFontSize(5);
-                        doc.setTextColor(100, 100, 100);
-                        doc.text(lblSub1, x + 28 + ((w - 31) / 4), cursorY + altoBox + 2, { align: "center" });
-                        doc.text(lblSub2, x + 28 + ((w - 31) / 2) + ((w - 31) / 4), cursorY + altoBox + 2, { align: "center" });
-
-                        cursorY += altoBox + 4.5;
-                    }
-                };
-
-                campoFila("TIPO DE ARCHIVO", tipoArchivo, 6);
-                campoFila("JUZGADO", juzgado, 7);
-                campoFila("JUEZ", juez, 6);
-                campoFila("PAQUETE N°", anioIngreso, 8, true, dataPaquete.nroPaq, "AÑO DE INGRESO", "NÚMERO PAQUETE");
-                campoFila("CANT. EXPEDIENTES", dataPaquete.cantExp, 6);
-                campoFila("AÑO EXPEDIENTES", dataPaquete.anioExp, 6);
-                campoFila("DOC. ING. ARCHIVO", oficio, 6);
-                campoFila("FECHA RECEPCIÓN", fechaRecepcion, 6);
-                campoFila("TRABAJADO POR", personal, 6);
-                campoFila("REPOSITORIO", repositorio, 6);
+            const tarjetaLote = {
+                anioIngreso,
+                personal,
+                tipoArchivo,
+                repositorio,
+                juzgado,
+                juez,
+                fechaRecepcion: fechaRecepcionRaw,
+                oficio,
+                paquetesData,
+                createdAt: Date.now(),
+                activo: true,
+                auditoria: { nombre: currentUserName, timestamp: Date.now() }
             };
 
-            // Imprimir de 2 en 2 tarjetas por página A4 (Izquierda y Derecha)
-            for (let i = 0; i < paquetesData.length; i += 2) {
-                if (i > 0) doc.addPage();
-                
-                // Coordenadas para centrar dos tarjetas de 88mm en una página A4 de 210mm de ancho
-                // Márgenes: Izq 12mm, Espacio central 10mm, Der 12mm -> (12 + 88 + 10 + 88 = 198, centrado perfecto)
-                const yPos = 12;
-                dibujarTarjeta(12, yPos, paquetesData[i]);
-
-                if (i + 1 < paquetesData.length) {
-                    dibujarTarjeta(110, yPos, paquetesData[i + 1]);
-                }
+            try {
+                await addDoc(collection(db, "tarjetas_paquetes"), tarjetaLote);
+                const blobUrl = await construirPDFTarjetas(tarjetaLote);
+                const fechaHoy = new Date().toISOString().split('T')[0];
+                mostrarModalPreviewPDF(blobUrl, `TARJETAS_PAQUETES_${fechaHoy}.pdf`);
+                await cargarHistorialTarjetas();
+            } catch (e) {
+                Swal.fire('Error', e.message, 'error');
             }
+        };
 
-            const blobUrl = doc.output('bloburl');
-            const fechaHoy = new Date().toISOString().split('T')[0];
-            mostrarModalPreviewPDF(blobUrl, `TARJETAS_PAQUETES_${fechaHoy}.pdf`);
+        async function cargarHistorialTarjetas() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "tarjetas_paquetes"));
+                baseDatosTarjetas = [];
+                querySnapshot.forEach((docSnap) => {
+                    const data = { id: docSnap.id, ...docSnap.data() };
+                    if (data.activo !== false) baseDatosTarjetas.push(data);
+                });
+                baseDatosTarjetas.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                filtrarHistorialTarjetas();
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        window.filtrarHistorialTarjetas = function() {
+            const fJuzgado = (document.getElementById('filtro-tar-juzgado')?.value || '').toLowerCase().trim();
+            const fRepo = document.getElementById('filtro-tar-repositorio')?.value || '';
+            const fTexto = (document.getElementById('busqueda-tarjetas')?.value || '').toLowerCase().trim();
+
+            const filtrados = baseDatosTarjetas.filter(t => {
+                const mJuzgado = fJuzgado === '' || (t.juzgado || '').toLowerCase().includes(fJuzgado);
+                const mRepo = fRepo === '' || t.repositorio === fRepo;
+                const mTexto = fTexto === '' || 
+                    (t.juez || '').toLowerCase().includes(fTexto) ||
+                    (t.oficio || '').toLowerCase().includes(fTexto) ||
+                    (t.personal || '').toLowerCase().includes(fTexto);
+                return mJuzgado && mRepo && mTexto;
+            });
+
+            renderTablaHistorialTarjetas(filtrados);
+        };
+
+        function renderTablaHistorialTarjetas(registros) {
+            const tbody = document.getElementById('tabla-historial-tarjetas');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            if (registros.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">Sin bloques de tarjetas registrados.</td></tr>`;
+                return;
+            }
+            registros.forEach(data => {
+                const fechaStr = data.createdAt ? new Date(data.createdAt).toLocaleDateString() : 'N/A';
+                const totalPaq = data.paquetesData ? data.paquetesData.length : 0;
+                const fila = `<tr>
+                    <td>${fechaStr}</td>
+                    <td><strong>${data.juzgado || 'N/A'}</strong><br><small class="text-muted">${data.juez || ''}</small></td>
+                    <td><span class="badge bg-secondary">${data.tipoArchivo || ''}</span><br><small>${data.repositorio || ''}</small></td>
+                    <td class="text-center fw-bold">${totalPaq}</td>
+                    <td>${data.personal || 'N/A'}</td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-danger py-1 px-2 me-1" onclick="window.reimprimirTarjetas('${data.id}')" title="Generar PDF">
+                            <i class="bi bi-file-pdf"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger py-1 px-2" onclick="window.eliminarTarjetasLote('${data.id}')" title="Eliminar">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>`;
+                tbody.insertAdjacentHTML('beforeend', fila);
+            });
+        }
+
+        window.reimprimirTarjetas = async function(id) {
+            const lote = baseDatosTarjetas.find(t => t.id === id);
+            if (!lote) return;
+            const blobUrl = await construirPDFTarjetas(lote);
+            mostrarModalPreviewPDF(blobUrl, `TARJETAS_${lote.juzgado || 'LOTE'}.pdf`);
+        };
+
+        window.eliminarTarjetasLote = async function(id) {
+            const confirmacion = await Swal.fire({
+                icon: 'warning',
+                title: '¿Eliminar bloque de tarjetas?',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                confirmButtonColor: '#800000'
+            });
+            if (!confirmacion.isConfirmed) return;
+
+            try {
+                await updateDoc(doc(db, "tarjetas_paquetes", id), { activo: false });
+                Swal.fire({ icon: 'success', title: 'Registro eliminado', timer: 1500, showConfirmButton: false });
+                await cargarHistorialTarjetas();
+            } catch (e) {
+                Swal.fire('Error', e.message, 'error');
+            }
         };
 
         window.switchView = switchView;
@@ -4253,8 +4259,8 @@
             
             const fila = `<tr>
                 <td class="fw-bold item-nro">${totalActual}</td>
-                <td><input type="text" class="form-control form-control-sm text-center tr-desde" placeholder="Ej: 23-001" value="${paqueteDesde}" oninput="recalcularFilaTraslado(this)"></td>
-                <td><input type="text" class="form-control form-control-sm text-center tr-hasta" placeholder="Ej: 23-050" value="${paqueteHasta}" oninput="recalcularFilaTraslado(this)"></td>
+                <td><input type="text" class="form-control form-control-sm text-center tr-desde" placeholder="Ej: 23-001 o E26-48" value="${paqueteDesde}" oninput="recalcularFilaTraslado(this)"></td>
+                <td><input type="text" class="form-control form-control-sm text-center tr-hasta" placeholder="Ej: 23-050 o E26-74" value="${paqueteHasta}" oninput="recalcularFilaTraslado(this)"></td>
                 <td><span class="badge bg-light text-dark border tr-cant fs-6">0</span></td>
                 <td><input type="text" class="form-control form-control-sm" placeholder="Juzgado" value="${juzgado}"></td>
                 <td><select class="form-select form-select-sm"><option value="">Seleccione...</option>${repoOpts}</select></td>
@@ -4272,6 +4278,14 @@
             recalcularFilaTraslado(nuevaFilaTr.querySelector('.tr-desde'));
         }
 
+        function extraerNumeroFlexible(cadena) {
+            if (!cadena) return null;
+            // Extrae el último bloque numérico encontrado en la cadena (ej: de "E26-74" saca 74, de "16777R" saca 16777, de "22-354" saca 354)
+            const matches = cadena.match(/\d+/g);
+            if (!matches || matches.length === 0) return null;
+            return parseInt(matches[matches.length - 1], 10);
+        }
+
         function recalcularFilaTraslado(elementoInput) {
             const tr = elementoInput.closest('tr');
             const desdeInput = tr.querySelector('.tr-desde').value.trim();
@@ -4281,15 +4295,10 @@
             let cantidadCalculada = 0;
 
             if (desdeInput && hastaInput) {
-                const matchDesde = desdeInput.match(REGEX_RANGO_PAQUETE);
-                const matchHasta = hastaInput.match(REGEX_RANGO_PAQUETE);
-
-                if (matchDesde && matchHasta) {
-                    const numDesde = parseInt(matchDesde[2], 10);
-                    const numHasta = parseInt(matchHasta[2], 10);
-                    if (!isNaN(numDesde) && !isNaN(numHasta) && numHasta >= numDesde) {
-                        cantidadCalculada = (numHasta - numDesde) + 1;
-                    }
+                const numDesde = extraerNumeroFlexible(desdeInput);
+                const numHasta = extraerNumeroFlexible(hastaInput);
+                if (numDesde !== null && numHasta !== null && numHasta >= numDesde) {
+                    cantidadCalculada = (numHasta - numDesde) + 1;
                 }
             } else if (desdeInput && !hastaInput) {
                 cantidadCalculada = 1;
@@ -4325,9 +4334,8 @@
             const tbody = document.querySelector('#tabla-tarjetas-detalles tbody');
             if (!tbody) return;
 
-            // Obtener el último número de paquete digitado para autoincrementar (correlativo automático)
             const filasActuales = tbody.querySelectorAll('tr');
-            let ultimoNro = 521; // Valor por defecto inicial si está vacío
+            let ultimoNro = 521;
             if (filasActuales.length > 0) {
                 const ultimaFila = filasActuales[filasActuales.length - 1];
                 const valUltimo = parseInt(ultimaFila.querySelector('.tar-nro-paq').value, 10);
