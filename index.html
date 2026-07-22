@@ -231,6 +231,7 @@
                 transform: translateX(-100%);
                 transition: transform 0.3s ease;
                 box-shadow: 4px 0 15px rgba(0,0,0,0.3);
+                overflow-y: auto; /* Permite desplazamiento vertical completo para ver Auditoría y Cerrar Sesión en móviles */
             }
 
             #sidebar.sidebar-abierto {
@@ -396,10 +397,16 @@
                 </div>
             </div>
 
-            <!-- MÓDULO: GENERADOR DE TARJETAS DE PAQUETES -->
+            <!-- MÓDULO: GENERADOR DE TARJETAS DE PAQUETES (CON CAMPOS VACÍOS POR DEFECTO Y LOGOTIPO) -->
             <section id="view-tarjetas" class="view-section">
                 <div class="card p-3 p-md-4 border-0 shadow-sm mb-4">
-                    <h6 class="form-section-title"><i class="bi bi-card-checklist me-2"></i>Parámetros Generales del Bloque de Tarjetas</h6>
+                    <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
+                        <img src="https://ecomindsetgo.github.io/saamir/LOGO%20ARCHIVO.png" alt="Logo Archivo CSJSA" style="max-height: 50px; object-fit: contain;" onerror="this.style.display='none'">
+                        <div>
+                            <h6 class="form-section-title m-0 p-0 border-0"><i class="bi bi-card-checklist me-2"></i>Parámetros Generales del Bloque de Tarjetas</h6>
+                            <small class="text-muted">Corte Superior de Justicia del Santa - Archivo Desconcentrado</small>
+                        </div>
+                    </div>
                     <div class="row g-3">
                         <div class="col-12 col-md-3">
                             <label class="form-label small fw-bold">Año de Ingreso (Ingreso)</label>
@@ -414,6 +421,7 @@
                         <div class="col-12 col-md-3">
                             <label class="form-label small fw-bold">Tipo de Archivo</label>
                             <select class="form-select form-select-sm bg-light" id="tar-tipo-archivo">
+                                <option value="" selected disabled>Seleccione...</option>
                                 <option value="DEFINITIVO">DEFINITIVO</option>
                                 <option value="TRANSITORIO">TRANSITORIO</option>
                             </select>
@@ -421,6 +429,7 @@
                         <div class="col-12 col-md-3">
                             <label class="form-label small fw-bold">Repositorio</label>
                             <select class="form-select form-select-sm bg-light" id="tar-repositorio">
+                                <option value="" selected disabled>Seleccione...</option>
                                 <option value="SÓTANO NCPP">SÓTANO NCPP</option>
                                 <option value="PADILLA">PADILLA</option>
                                 <option value="DOMUS">DOMUS</option>
@@ -429,11 +438,11 @@
                         </div>
                         <div class="col-12 col-md-4">
                             <label class="form-label small fw-bold">Juzgado</label>
-                            <input type="text" class="form-control form-control-sm" id="tar-juzgado" placeholder="Ej: CONSTITUCIONAL">
+                            <input type="text" class="form-control form-control-sm" id="tar-juzgado" placeholder="">
                         </div>
                         <div class="col-12 col-md-4">
                             <label class="form-label small fw-bold">Juez</label>
-                            <input type="text" class="form-control form-control-sm" id="tar-juez" placeholder="Ej: IBAÑEZ VEGA MILLNER">
+                            <input type="text" class="form-control form-control-sm" id="tar-juez" placeholder="">
                         </div>
                         <div class="col-12 col-md-4">
                             <label class="form-label small fw-bold">Fecha de Recepción</label>
@@ -441,14 +450,14 @@
                         </div>
                         <div class="col-12">
                             <label class="form-label small fw-bold">Oficio (Documento de Ingreso al Archivo)</label>
-                            <input type="text" class="form-control form-control-sm" id="tar-oficio" placeholder="Ej: OFICIO Nº 000060-2026-MCCALP-CSJSA-PJ-PJ">
+                            <input type="text" class="form-control form-control-sm" id="tar-oficio" placeholder="">
                         </div>
                     </div>
                 </div>
 
                 <div class="card p-3 p-md-4 border-0 shadow-sm">
                     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                        <h6 class="form-section-title m-0"><i class="bi bi-table me-2"></i>Detalle de Paquetes (Filas Interactivas)</h6>
+                        <h6 class="form-section-title m-0"><i class="bi bi-table me-2"></i>Detalle de Paquetes (Filas Interactivas - Vacías por defecto)</h6>
                         <div class="d-flex gap-2">
                             <button class="btn btn-outline-secondary btn-sm" onclick="window.agregarFilaTarjeta(5)">+ Añadir 5 Filas</button>
                             <button class="btn btn-dark btn-sm" onclick="window.agregarFilaTarjeta(1)">+ Añadir Fila</button>
@@ -467,7 +476,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Filas dinámicas -->
+                                <!-- Filas dinámicas vacías por defecto -->
                             </tbody>
                         </table>
                     </div>
@@ -837,7 +846,7 @@
                 </div>
             </section>
 
-            <!-- MÓDULO DE CONTROL DE MICROFORMAS -->
+            <!-- MÓDULO DE CONTROL DE MICROFORMAS (CON PAGINACIÓN DE 10 REGISTROS) -->
             <section id="view-microformas" class="view-section">
                 <div class="card p-3 p-md-4 border-0 shadow-sm mb-4">
                     <div class="text-center mb-4 pb-3 border-bottom">
@@ -850,7 +859,7 @@
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center mb-3 no-print flex-wrap gap-2">
-                        <span class="badge bg-secondary p-2">Registro Oficial de Bloques</span>
+                        <span class="badge bg-secondary p-2">Registro Oficial de Bloques (Paginado: 10 por página)</span>
                         <div class="d-flex gap-2 flex-wrap">
                             <button class="btn btn-danger btn-sm d-flex align-items-center gap-1" id="btn-imprimir-microformas" onclick="window.generarPDFMicroformasInstitucional()">
                                 <i class="bi bi-file-pdf"></i> Generar PDF
@@ -889,6 +898,12 @@
                             <tfoot class="table-secondary fw-bold" id="tabla-microformas-foot">
                             </tfoot>
                         </table>
+                    </div>
+                    <!-- CONTROLES DE PAGINACIÓN PARA MICROFORMAS -->
+                    <div class="d-flex justify-content-between align-items-center mt-3 no-print">
+                        <button class="btn btn-outline-secondary btn-sm" id="btn-micro-prev" onclick="cambiarPaginaMicroformas(-1)"><i class="bi bi-chevron-left"></i> Anterior</button>
+                        <span class="small fw-bold text-muted" id="info-paginacion-microformas">Página 1 de 1</span>
+                        <button class="btn btn-outline-secondary btn-sm" id="btn-micro-next" onclick="cambiarPaginaMicroformas(1)">Siguiente <i class="bi bi-chevron-right"></i></button>
                     </div>
                 </div>
             </section>
@@ -1173,7 +1188,7 @@
                 </div>
             </section>
 
-            <!-- AUDITORÍA GENERAL DE CAMBIOS -->
+            <!-- AUDITORÍA GENERAL DE CAMBIOS (CON PAGINACIÓN DE 10 REGISTROS) -->
             <section id="view-auditoria" class="view-section">
                 <div class="card p-3 p-md-4 border-0 shadow-sm mb-3">
                     <h6 class="form-section-title"><i class="bi bi-funnel me-2"></i>Filtros del Log de Auditoría</h6>
@@ -1212,7 +1227,7 @@
                 <div class="card p-3 p-md-4 border-0 shadow-sm">
                     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                         <h6 class="fw-bold m-0 text-dark">
-                            <i class="bi bi-shield-check me-2"></i>Log de Trazabilidad (Creaciones, Ediciones y Bajas)
+                            <i class="bi bi-shield-check me-2"></i>Log de Trazabilidad (Creaciones, Ediciones y Bajas) - Paginado: 10
                         </h6>
                         <div class="d-flex gap-2 flex-wrap">
                             <button class="btn btn-outline-success btn-sm" onclick="imprimirReporteAuditoria()">
@@ -1237,6 +1252,12 @@
                             <tbody id="tabla-auditoria-global">
                             </tbody>
                         </table>
+                    </div>
+                    <!-- CONTROLES DE PAGINACIÓN PARA AUDITORÍA -->
+                    <div class="d-flex justify-content-between align-items-center mt-3 no-print">
+                        <button class="btn btn-outline-secondary btn-sm" id="btn-aud-prev" onclick="cambiarPaginaAuditoria(-1)"><i class="bi bi-chevron-left"></i> Anterior</button>
+                        <span class="small fw-bold text-muted" id="info-paginacion-auditoria">Página 1 de 1</span>
+                        <button class="btn btn-outline-secondary btn-sm" id="btn-aud-next" onclick="cambiarPaginaAuditoria(1)">Siguiente <i class="bi bi-chevron-right"></i></button>
                     </div>
                 </div>
             </section>
@@ -1625,6 +1646,11 @@
         let modalInstance = null;
         let modalMicroformaInstance = null;
 
+        // Variables para Paginación de 10 registros
+        let paginaActualMicroformas = 1;
+        let paginaActualAuditoria = 1;
+        const registrosPorPagina = 10;
+
         function obtenerLogoArchivoBase64() {
             return new Promise((resolve) => {
                 const img = new Image();
@@ -1654,7 +1680,7 @@
             }
             inicializarAniosIngresoTarjetas();
             if (document.querySelectorAll('#tabla-tarjetas-detalles tbody tr').length === 0) {
-                window.agregarFilaTarjeta(5); // Iniciar con 5 filas por defecto
+                window.agregarFilaTarjeta(5); // Iniciar con 5 filas vacías por defecto
             }
         });
 
@@ -2192,8 +2218,22 @@
             if (baseDatosMicroformas.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="13" class="text-center text-muted py-4">No hay bloques registrados en el sistema.</td></tr>`;
                 tfoot.innerHTML = '';
+                document.getElementById('info-paginacion-microformas').innerText = 'Página 1 de 1';
                 return;
             }
+
+            // Paginación (10 registros por página)
+            const totalPaginas = Math.ceil(baseDatosMicroformas.length / registrosPorPagina) || 1;
+            if (paginaActualMicroformas > totalPaginas) paginaActualMicroformas = totalPaginas;
+            if (paginaActualMicroformas < 1) paginaActualMicroformas = 1;
+
+            const inicio = (paginaActualMicroformas - 1) * registrosPorPagina;
+            const fin = inicio + registrosPorPagina;
+            const registrosPaginados = baseDatosMicroformas.slice(inicio, fin);
+
+            document.getElementById('info-paginacion-microformas').innerText = `Página ${paginaActualMicroformas} de ${totalPaginas} (Total: ${baseDatosMicroformas.length} registros)`;
+            document.getElementById('btn-micro-prev').disabled = paginaActualMicroformas <= 1;
+            document.getElementById('btn-micro-next').disabled = paginaActualMicroformas >= totalPaginas;
 
             let sumaPaquetes = 0;
             let sumaFolios = 0;
@@ -2205,18 +2245,12 @@
             const currentUserName = currentUserObj ? (currentUserObj.displayName ? normalizarTexto(currentUserObj.displayName) : normalizarTexto(currentUserObj.email.split('@')[0])) : '';
             const esEditor = puedeEditarMicroformas(currentUserName);
 
-            baseDatosMicroformas.forEach(item => {
+            registrosPaginados.forEach(item => {
                 const folios = item.folios || 0;
                 const imagenes = item.imagenes || 0;
                 const registros = item.registros || 0;
                 const expedientes = item.expedientes || 0;
                 const cantPaquetes = item.cantPaquetes || 0;
-
-                sumaPaquetes += cantPaquetes;
-                sumaFolios += folios;
-                sumaImagenes += imagenes;
-                sumaRegistros += registros;
-                sumaExpedientes += expedientes;
 
                 const fInicio = item.fecInicio ? item.fecInicio.split('-').reverse().join('/') : '';
                 const fFin = item.fecFin ? item.fecFin.split('-').reverse().join('/') : '';
@@ -2246,6 +2280,15 @@
                 tbody.insertAdjacentHTML('beforeend', tr);
             });
 
+            // Totales generales calculados sobre toda la base de datos
+            baseDatosMicroformas.forEach(item => {
+                sumaPaquetes += item.cantPaquetes || 0;
+                sumaFolios += item.folios || 0;
+                sumaImagenes += item.imagenes || 0;
+                sumaRegistros += item.registros || 0;
+                sumaExpedientes += item.expedientes || 0;
+            });
+
             const totalBloques = baseDatosMicroformas.length;
             const promPaquetes = totalBloques > 0 ? (sumaPaquetes / totalBloques).toFixed(0) : 0;
             const promFolios = totalBloques > 0 ? Math.round(sumaFolios / totalBloques) : 0;
@@ -2255,7 +2298,7 @@
 
             tfoot.innerHTML = `
                 <tr class="table-warning">
-                    <td colspan="2" class="text-end pe-3">TOTALES</td>
+                    <td colspan="2" class="text-end pe-3">TOTALES (GENERAL)</td>
                     <td>${sumaPaquetes}</td>
                     <td>-</td>
                     <td>${sumaFolios.toLocaleString()}</td>
@@ -2276,6 +2319,11 @@
                 </tr>
             `;
         }
+
+        window.cambiarPaginaMicroformas = function(direccion) {
+            paginaActualMicroformas += direccion;
+            renderTablaMicroformas();
+        };
 
         window.eliminarMicroforma = async function(id) {
             const currentUserObj = auth.currentUser;
@@ -2852,6 +2900,7 @@
                 return matchFecha && matchAccion && matchUsuario;
             });
 
+            paginaActualAuditoria = 1; // Reiniciar a página 1 al filtrar
             renderTablaAuditoria(logsFiltrados);
         };
 
@@ -2862,16 +2911,33 @@
             filtrarAuditoria();
         };
 
+        let logsFiltradosCache = [];
+
         function renderTablaAuditoria(logs) {
+            logsFiltradosCache = logs;
             const tbody = document.getElementById('tabla-auditoria-global');
             if(!tbody) return;
             tbody.innerHTML = '';
+            
             if (logs.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">No hay registros de auditoría que coincidan con los filtros.</td></tr>`;
+                document.getElementById('info-paginacion-auditoria').innerText = 'Página 1 de 1';
                 return;
             }
 
-            logs.forEach(l => {
+            const totalPaginas = Math.ceil(logs.length / registrosPorPagina) || 1;
+            if (paginaActualAuditoria > totalPaginas) paginaActualAuditoria = totalPaginas;
+            if (paginaActualAuditoria < 1) paginaActualAuditoria = 1;
+
+            const inicio = (paginaActualAuditoria - 1) * registrosPorPagina;
+            const fin = inicio + registrosPorPagina;
+            const registrosPaginados = logs.slice(inicio, fin);
+
+            document.getElementById('info-paginacion-auditoria').innerText = `Página ${paginaActualAuditoria} de ${totalPaginas} (Total: ${logs.length} registros)`;
+            document.getElementById('btn-aud-prev').disabled = paginaActualAuditoria <= 1;
+            document.getElementById('btn-aud-next').disabled = paginaActualAuditoria >= totalPaginas;
+
+            registrosPaginados.forEach(l => {
                 let badgeColor = 'bg-success';
                 if (l.accion.includes('Eliminación')) badgeColor = 'bg-danger';
                 if (l.accion.includes('Actualización') || l.accion.includes('Edición')) badgeColor = 'bg-warning text-dark';
@@ -2887,6 +2953,11 @@
                 tbody.insertAdjacentHTML('beforeend', tr);
             });
         }
+
+        window.cambiarPaginaAuditoria = function(direccion) {
+            paginaActualAuditoria += direccion;
+            renderTablaAuditoria(logsFiltradosCache);
+        };
 
         window.imprimirReporteAuditoria = function() {
             const contenido = document.getElementById('tabla-auditoria-container');
@@ -4059,8 +4130,6 @@
                 filaDato("REPOSITORIO", repositorio);
             };
 
-            // En hoja horizontal (297 x 210 mm), colocamos 2 tarjetas lado a lado
-            // Margen superior 12 mm, ancho de tarjeta 130 mm (izq: 14 mm, der: 153 mm)
             for (let i = 0; i < paquetesData.length; i += 2) {
                 if (i > 0) doc.addPage();
                 
@@ -4333,32 +4402,21 @@
             if (lbl) lbl.textContent = sumaTotalPaquetes;
         }
 
-        // FUNCIONES PARA EL GENERADOR DE TARJETAS DE PAQUETES
+        // FUNCIONES PARA EL GENERADOR DE TARJETAS DE PAQUETES (CAMPOS VACÍOS POR DEFECTO)
         window.agregarFilaTarjeta = function(cantidad = 1) {
             const tbody = document.querySelector('#tabla-tarjetas-detalles tbody');
             if (!tbody) return;
 
-            const filasActuales = tbody.querySelectorAll('tr');
-            let ultimoNro = 521;
-            if (filasActuales.length > 0) {
-                const ultimaFila = filasActuales[filasActuales.length - 1];
-                const valUltimo = parseInt(ultimaFila.querySelector('.tar-nro-paq').value, 10);
-                if (!isNaN(valUltimo)) {
-                    ultimoNro = valUltimo + 1;
-                }
-            }
-
             for (let i = 0; i < cantidad; i++) {
-                const nroCorrelativoActual = ultimoNro + i;
                 const idx = tbody.querySelectorAll('tr').length + 1;
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="fw-bold tar-item-nro">${idx}</td>
-                    <td><input type="number" class="form-control form-control-sm text-center fw-bold tar-nro-paq" value="${nroCorrelativoActual}" oninput="actualizarResumenTarjeta(this)"></td>
-                    <td><input type="number" class="form-control form-control-sm text-center tar-cant-exp" value="5" min="1" oninput="actualizarResumenTarjeta(this)"></td>
-                    <td><input type="text" class="form-control form-control-sm text-center tar-anio-exp" value="2026" placeholder="Ej: 2019 o 2005-2025" oninput="actualizarResumenTarjeta(this)"></td>
-                    <td class="text-start small text-muted tar-resumen">Paquete N° ${nroCorrelativoActual} (5 exp. - Año: 2026)</td>
+                    <td><input type="number" class="form-control form-control-sm text-center fw-bold tar-nro-paq" value="" placeholder="" oninput="actualizarResumenTarjeta(this)"></td>
+                    <td><input type="number" class="form-control form-control-sm text-center tar-cant-exp" value="" placeholder="" min="1" oninput="actualizarResumenTarjeta(this)"></td>
+                    <td><input type="text" class="form-control form-control-sm text-center tar-anio-exp" value="" placeholder="" oninput="actualizarResumenTarjeta(this)"></td>
+                    <td class="text-start small text-muted tar-resumen">Paquete sin definir</td>
                     <td class="text-center">
                         <button type="button" class="btn btn-outline-danger btn-sm py-0 px-1" onclick="this.closest('tr').remove(); reindexarTarjetas();">
                             <i class="bi bi-trash"></i>
@@ -4379,9 +4437,9 @@
 
         window.actualizarResumenTarjeta = function(inputEl) {
             const tr = inputEl.closest('tr');
-            const nroPaq = tr.querySelector('.tar-nro-paq').value || '-';
-            const cantExp = tr.querySelector('.tar-cant-exp').value || '0';
-            const anioExp = tr.querySelector('.tar-anio-exp').value || '-';
+            const nroPaq = tr.querySelector('.tar-nro-paq').value || '...';
+            const cantExp = tr.querySelector('.tar-cant-exp').value || '...';
+            const anioExp = tr.querySelector('.tar-anio-exp').value || '...';
             const tdResumen = tr.querySelector('.tar-resumen');
             if (tdResumen) {
                 tdResumen.textContent = `Paquete N° ${nroPaq} (${cantExp} exp. - Año: ${anioExp})`;
